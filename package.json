@@ -1,0 +1,15 @@
+{
+  "name": "ttypescript",
+  "bin": {
+    "ttsc": "./bin/tsc",
+    "ttsserver": "./bin/tsserver"
+  },
+  "scripts": {
+    "postinstall": ""
+  },
+  "version": "1.0.0",
+  "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
+  "main": "lib/tsc.js",
+  "author": "cevek",
+  "license": "ISC"
+}
