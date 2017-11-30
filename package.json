@@ -7,7 +7,7 @@
   "scripts": {
     "postinstall": "node ./postinstall.js"
   },
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "author": "cevek",
