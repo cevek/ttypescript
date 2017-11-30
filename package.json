@@ -5,11 +5,15 @@
     "ttsserver": "./bin/tsserver"
   },
   "scripts": {
-    "postinstall": ""
+    "postinstall": "node ./postinstall.js"
   },
   "version": "1.0.0",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
-  "main": "lib/tsc.js",
+  "main": "lib/typescript.js",
   "author": "cevek",
-  "license": "ISC"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cevek/ttypescript.git"
+  },
+  "license": "MIT"
 }
