@@ -1,6 +1,6 @@
 # ttypescript
 ## What it is
-Currently TypeScript doesn't support custom transformers in the tsconfig.json, but supports it programatically.
+Currently TypeScript doesn't support custom transformers in the tsconfig.json, but supports it programmatically.
 
 And there is no way to compile your files using custom transformers using `tsc` command.
 
