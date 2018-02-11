@@ -15,5 +15,8 @@
     "type": "git",
     "url": "https://github.com/cevek/ttypescript.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^2.7.1"
+  }
 }
