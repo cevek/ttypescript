@@ -1,12 +1,11 @@
 # ttypescript
 
 ## What it is
-
-Currently TypeScript doesn't support custom transformers in the tsconfig.json, but supports its programatically.
+Currently TypeScript doesn't support custom transformers in the tsconfig.json, but supports it programmatically.
 
 And there is no way to compile your files using custom transformers using `tsc` command.
 
-TTypescript (Transformer Typescript) solves this problem by patching on the fly the compile module to use transformers from `tsconfig.json`.
+TTypescript (Transformer TypeScript) solves this problem by patching on the fly the compile module to use transformers from `tsconfig.json`.
 
 ## How to install
 
@@ -76,5 +75,8 @@ npx ts-node -C ttypescript index.ts
 An example project is in the `example` directory
 
 ## License
+<<<<<<< HEAD
 
+=======
+>>>>>>> 566791dcbcc9e4a5bd5e73248b41bbacbdfbd1aa
 MIT License
