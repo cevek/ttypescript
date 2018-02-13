@@ -75,8 +75,4 @@ npx ts-node -C ttypescript index.ts
 An example project is in the `example` directory
 
 ## License
-<<<<<<< HEAD
-
-=======
->>>>>>> 566791dcbcc9e4a5bd5e73248b41bbacbdfbd1aa
 MIT License
