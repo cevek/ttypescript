@@ -4,10 +4,8 @@
     "ttsc": "./bin/tsc",
     "ttsserver": "./bin/tsserver"
   },
-  "scripts": {
-    "postinstall": "node ./postinstall.js"
-  },
-  "version": "1.0.2",
+  "scripts": {},
+  "version": "1.0.5",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "author": "cevek",
@@ -15,5 +13,9 @@
     "type": "git",
     "url": "https://github.com/cevek/ttypescript.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ts-node": "*",
+    "typescript": "*"
+  }
 }

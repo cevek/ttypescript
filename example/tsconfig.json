@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "plugins": [
+            {
+                "customTransformers": {
+                    "before": ["./transformers/transformer.ts"]
+                }
+            }
+        ]
+    },
+    "exclude": ["transformers/**/*"]
+}

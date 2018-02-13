@@ -1,5 +1,7 @@
 # ttypescript
+
 ## What it is
+
 Currently TypeScript doesn't support custom transformers in the tsconfig.json, but supports its programatically.
 
 And there is no way to compile your files using custom transformers using `tsc` command.
@@ -7,44 +9,57 @@ And there is no way to compile your files using custom transformers using `tsc` 
 TTypescript (Transformer Typescript) solves this problem by patching on the fly the compile module to use transformers from `tsconfig.json`.
 
 ## How to install
+
 ```
-npm i ttypescript --save
-npm i -g ttypescript
+npm i ttypescript -D
 ```
+
 ttypescript uses your installed `typescript` in your `node_modules`
 
 ## How to use
 
+You can use transformers written in ts or js
+
 ### tsconfig.json
-You just need to add the `customTransformers` block with `before` and(or) `after` object contains array of transformer paths into the `compilerOptions`
+
+You just need to add the `customTransformers` block with `before` and(or) `after` object contains array of transformer paths into the `compilerOptions.plugins`
+
+Don't forget to exclude your transformers in the tsconfig.json
+
 ```json
 {
-  "compilerOptions": {
-   "customTransformers": {
-      "before": [
-        "transformermodule"
-      ],
-      "after": [
-        "./or_some_path_in_your_project_directory"
-      ]
-    }
-  }
+    "compilerOptions": {
+        "plugins": [
+            {
+                "customTransformers": {
+                    "before": ["transformer-module"],
+                    "after": ["./transformers/my-transformer.ts"]
+                }
+            }
+        ]
+    },
+    "exclude": ["node_modules", "transformers/**/*"]
 }
 ```
 
 ### Command line
+
 Like usual `tsc`, all arguments work the same way.
+
 ```
-ttsc
+npx ttsc
 ```
 
 ### ts-node
+
 ```
-ts-node --compiler ttypescript index.ts
+npx ts-node --compiler ttypescript index.ts
 or
-ts-node -C ttypescript index.ts
+npx ts-node -C ttypescript index.ts
 ```
+
 ### Webpack
+
 ```js
     {
         test: /\.(ts|tsx)$/,
@@ -56,11 +71,10 @@ ts-node -C ttypescript index.ts
     }
 ```
 
-### Visual Studio Code
-Set the config `typescript.tsdk` to `/usr/local/lib/node_modules/ttypescript/lib/`
+## Example
 
-### WebStorm
-Set in the TypeScript settings tab the typescript path: `/usr/local/lib/node_modules/ttypescript` or from your project node_modules
+An example project is in the `example` directory
 
 ## License
+
 MIT License
