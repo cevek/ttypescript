@@ -17,8 +17,6 @@ ttypescript uses your installed `typescript` in your `node_modules`
 
 ## How to use
 
-You can use transformers written in ts or js
-
 ### tsconfig.json
 
 You just need to add the `customTransformers` block with `before` and(or) `after` object contains array of transformer paths into the `compilerOptions.plugins`
@@ -49,6 +47,8 @@ Like usual `tsc`, all arguments work the same way.
 npx ttsc
 ```
 
+Be careful `npx ttsc test.ts` like `tsc test.ts` doesn't use your tsconfig.json and transformations won't be applied
+
 ### ts-node
 
 ```
@@ -70,13 +70,27 @@ npx ts-node -C ttypescript index.ts
     }
 ```
 
+## Transformers
+You can use transformers written in ts or js
+
+As extra feature ttsc provide the `program` as a second argument 
+
+```ts
+import * as ts from 'typescript';
+export default (ctx: ts.TransformationContext, program: ts.Program): ts.Transformer<ts.SourceFile> => {
+    return sourceFile => {
+        function visitor(node: ts.Node): ts.Node {
+            return ts.visitEachChild(node, visitor, ctx);
+        }
+        return ts.visitNode(sourceFile, visitor);
+    };
+};
+```
+
+
 ## Example
 
 An example project is in the `example` directory
 
 ## License
-<<<<<<< HEAD
-
-=======
->>>>>>> 566791dcbcc9e4a5bd5e73248b41bbacbdfbd1aa
 MIT License
