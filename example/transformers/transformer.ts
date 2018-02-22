@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-export default (ctx: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
+export default (ctx: ts.TransformationContext, program: ts.Program): ts.Transformer<ts.SourceFile> => {
     return sourceFile => {
         function visitor(node: ts.Node): ts.Node {
             if (ts.isCallExpression(node) && ts.getTextOfNodeFromSourceText(sourceFile.text, node.expression) === 'safely') {
