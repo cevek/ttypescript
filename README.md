@@ -70,6 +70,14 @@ npx ts-node -C ttypescript index.ts
     }
 ```
 
+### VC Code
+If you want to compile your project with VC Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttsc`: 
+```
+"typescript.tsdk": "/usr/local/lib/node_modules/ttypescript/lib",
+or 
+"typescript.tsdk": "node_modules/ttypescript/lib",
+```
+
 ## Transformers
 You can use transformers written in ts or js
 
