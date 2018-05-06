@@ -5,7 +5,7 @@
     "ttsserver": "./bin/tsserver"
   },
   "scripts": {},
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "author": "cevek",
@@ -15,8 +15,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "ts-node": "*",
-    "typescript": "*"
+    "ts-node": "^6.0.2"
   },
   "devDependencies": {
     "@types/node": "^9.6.1"
