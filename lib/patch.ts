@@ -1,7 +1,9 @@
 import * as TS from 'typescript';
 import { dirname } from 'path';
 import { customRequire } from './customRequire';
-require('ts-node').register({ project: __dirname + '/../ts-node-config/tsconfig.json' });
+if (module!.parent!.parent === undefined || module!.parent!.parent!.id.indexOf('/ts-node/') === -1) {
+    require('ts-node').register({ project: __dirname + '/../ts-node-config/tsconfig.json', transpileOnly: true });
+}
 
 interface CustomCompilerOptions extends TS.CompilerOptions {
     // @ts-ignore
@@ -36,7 +38,7 @@ export default function(ts: typeof TS, tsDirname: string) {
         const program = originCreateProgram(rootNames, options, host, oldProgram);
         const compilerOptions = program.getCompilerOptions() as CustomCompilerOptions;
         const projectDir = compilerOptions.configFilePath ? dirname(compilerOptions.configFilePath) : process.cwd();
-        console.log('Used TypeScript from: ' + dirname(tsDirname) + ', version: ' + ts.version);
+        // console.log('Used TypeScript from: ' + dirname(tsDirname) + ', version: ' + ts.version);
         // console.log('TypeScript from: ' + tsDirname);
 
         const originEmit = program.emit;
