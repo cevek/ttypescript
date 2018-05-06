@@ -1,7 +1,7 @@
 import * as TS from 'typescript';
 import { dirname } from 'path';
 import { customRequire } from './customRequire';
-if (module!.parent!.parent === undefined || module!.parent!.parent!.id.indexOf('/ts-node/') === -1) {
+if (module.parent!.parent === null || module.parent!.parent!.id.indexOf('/ts-node/') === -1) {
     require('ts-node').register({ project: __dirname + '/../ts-node-config/tsconfig.json', transpileOnly: true });
 }
 
@@ -36,8 +36,6 @@ export default function(ts: typeof TS, tsDirname: string) {
         oldProgram?: TS.Program
     ): TS.Program {
         const program = originCreateProgram(rootNames, options, host, oldProgram);
-        const compilerOptions = program.getCompilerOptions() as CustomCompilerOptions;
-        const projectDir = compilerOptions.configFilePath ? dirname(compilerOptions.configFilePath) : process.cwd();
         // console.log('Used TypeScript from: ' + dirname(tsDirname) + ', version: ' + ts.version);
         // console.log('TypeScript from: ' + tsDirname);
 
@@ -50,9 +48,8 @@ export default function(ts: typeof TS, tsDirname: string) {
             customTransformers?: TS.CustomTransformers
         ): TS.EmitResult {
             const transformers = getCustomTransformersFromConfig(
+                ts,
                 program,
-                compilerOptions,
-                projectDir,
                 customTransformers
             ) as TS.CustomTransformers;
             return originEmit(targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, transformers);
@@ -62,13 +59,13 @@ export default function(ts: typeof TS, tsDirname: string) {
     return ts;
 }
 
-function requireTransformer(dir: string, module: string, program: TS.Program): Function | undefined {
+function requireTransformer(dir: string, module: string, program: TS.Program, ts: typeof TS): Function | undefined {
     const transformer = customRequire(dir, module);
     if (typeof transformer === 'function') {
-        return bindSecondArg(transformer, program);
+        return bindSecondArg(transformer, program, ts);
     }
     if (typeof transformer.default === 'function') {
-        return bindSecondArg(transformer.default, program);
+        return bindSecondArg(transformer.default, program, ts);
     }
     // skip if empty object - recursion bug
     if (transformer && typeof transformer === 'object' && Object.keys(transformer).length === 0) {
@@ -78,6 +75,7 @@ function requireTransformer(dir: string, module: string, program: TS.Program): F
 }
 
 function addCustomTranformers(
+    ts: typeof TS,
     program: TS.Program,
     projectDir: string,
     transformerPathList: string[] | undefined,
@@ -93,7 +91,7 @@ function addCustomTranformers(
     }
     for (let i = 0; i < transformerPathList.length; i++) {
         const transformerPath = transformerPathList[i];
-        const transformer = requireTransformer(projectDir, transformerPath, program);
+        const transformer = requireTransformer(projectDir, transformerPath, program, ts);
         if (transformer !== undefined) {
             if (type === 'after') {
                 transformers.after.push(transformer);
@@ -105,14 +103,23 @@ function addCustomTranformers(
 }
 
 function getCustomTransformersFromConfig(
+    ts: typeof TS,
     program: TS.Program,
-    compilerOptions: CustomCompilerOptions,
-    projectDir: string,
     prevTransformers: Partial<Transformers> = {}
 ) {
+    const compilerOptions = program.getCompilerOptions() as CustomCompilerOptions;
+    const configFileNamePath = compilerOptions.configFilePath || ts.findConfigFile(process.cwd(), ts.sys.fileExists);
+    const projectDir = configFileNamePath ? dirname(configFileNamePath) : process.cwd();
+
     const { before = [], after = [] } = prevTransformers;
     const transformers: Transformers = { before, after };
-    const { plugins = [] } = compilerOptions;
+    let { plugins = [] } = compilerOptions;
+    if (compilerOptions.configFilePath === undefined && configFileNamePath !== undefined) {
+        const config = readConfig(configFileNamePath, projectDir, ts);
+        if (config !== undefined) {
+            plugins = config.raw.compilerOptions.plugins || [];
+        }
+    }
     const { customTransformers = {} } = plugins.find(plugin => !!plugin.customTransformers) || {
         customTransformers: undefined,
     };
@@ -126,15 +133,23 @@ function getCustomTransformersFromConfig(
             console.error(`Unknown property: plugins.customTransformers.${key}`);
         }
     });
-    addCustomTranformers(program, projectDir, customTransformers.before, transformers, 'before');
-    addCustomTranformers(program, projectDir, customTransformers.after, transformers, 'after');
+    addCustomTranformers(ts, program, projectDir, customTransformers.before, transformers, 'before');
+    addCustomTranformers(ts, program, projectDir, customTransformers.after, transformers, 'after');
     return transformers;
 }
 
-function bindSecondArg(fn: Function, secondArg: {}) {
+function bindSecondArg(fn: Function, secondArg: {}, ts: typeof TS) {
     return function(firstArg: {}) {
-        return fn(firstArg, secondArg);
+        return fn(firstArg, secondArg, ts);
     };
+}
+
+function readConfig(configFileNamePath: string, projectDir: string, ts: typeof TS) {
+    const result = ts.readConfigFile(configFileNamePath, ts.sys.readFile);
+    if (result.error) {
+        throw new Error('tsconfig.json error: ' + result.error.messageText);
+    }
+    return ts.parseJsonConfigFileContent(result.config, ts.sys, projectDir, undefined, configFileNamePath);
 }
 
 // var copyHost = ts.createCompilerHost(options);
