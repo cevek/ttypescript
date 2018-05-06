@@ -1,7 +1,7 @@
 import * as TS from 'typescript';
 import { dirname } from 'path';
 import { customRequire } from './customRequire';
-if (module.parent!.parent === null || module.parent!.parent!.id.indexOf('/ts-node/') === -1) {
+if (module.parent!.parent === null || module.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1) {
     require('ts-node').register({ project: __dirname + '/../ts-node-config/tsconfig.json', transpileOnly: true });
 }
 
