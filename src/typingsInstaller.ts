@@ -1,0 +1,1 @@
+module.exports = require('typescript/lib/typingsInstallers.js');
