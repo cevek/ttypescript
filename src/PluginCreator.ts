@@ -11,15 +11,14 @@ export type TransformerPlugin = {
 export type FactoryType = 'ls' | 'program' | 'opts' | 'checker'
 
 export type PluginConfig = {
-    transform: string
+    name?: string
+    transform?: string
     type?: FactoryType
     after?: boolean
     before?: boolean
     afterDeclaration?: boolean
     [options: string]: any;
-} | (ts.PluginImport & {
-    [options: string]: any
-})
+}
 
 export type PluginFactory = {
     type: 'ls'
@@ -98,7 +97,7 @@ class TransformerPluginFactory {
     }
 
     createPlugin(factory: PluginFactory, options: PluginConfig): TransformerPlugin {
-        const name = options.transformer || options.name
+        const name = options.transform || options.name
         switch (factory.type) {
             case 'ls':
                 if (!this.ls) throw new Error(`Plugin ${name} need a LanguageService`)

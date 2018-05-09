@@ -1,1 +1,2 @@
-export = require('typescript/lib/watchGuard.js')
+import * as wg from 'typescript/lib/watchGuard'
+export = wg

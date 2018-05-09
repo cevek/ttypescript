@@ -1,1 +1,2 @@
-export = require('typescript/lib/typingsInstallers.js')
+import * as installer from 'typescript/lib/typingsInstaller'
+export = installer

@@ -1,1 +1,2 @@
-module.exports = require('typescript/lib/cancelationToken.js');
+import * as cancellationToken from 'typescript/lib/cancellationToken'
+export = cancellationToken
