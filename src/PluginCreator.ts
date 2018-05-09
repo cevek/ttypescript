@@ -148,7 +148,7 @@ export class PluginCreator {
             : module
     }
 
-    createTransformers: (TransformerHost) => ts.CustomTransformers = (main: TransformerHost) => {
+    createTransformers(main: TransformerHost) {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[]
             after: ts.TransformerFactory<ts.SourceFile>[]
@@ -163,9 +163,7 @@ export class PluginCreator {
         for(let config of this.configs) {
             if (!config.transform) continue
             const factory = this.resolveFactory(config.transform)
-            if (config.type && factory.type === undefined) {
-                (factory as any).type = config.type
-            }
+            factory.type = factory.type || config.type;
 
             const plugin = pluginFactory.createPlugin(factory, config)
 
@@ -179,7 +177,7 @@ export class PluginCreator {
                 if (plugin.afterDeclaration) chain.afterDeclaration.push(plugin.afterDeclaration)
             }
         }
-
+        
         return chain
     }
 }
