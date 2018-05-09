@@ -36,18 +36,22 @@ export type PluginFactory = {
 
 export type TransformerHost = ts.LanguageService | ts.Program | ts.CompilerOptions | ts.TypeChecker
 
-function patchEmitFiles(): ts.TransformerFactory<ts.SourceFile>[] {
-    let a: any = ts
-    if (a.emitFiles.__patched) return a.emitFiles.__patched
-    const dtsTransformers: ts.TransformerFactory<ts.SourceFile>[] = a.emitFiles.__patched = []
+export type DeclarationPatchBaseHost = Pick<typeof ts, 'versionMajorMinor'>
 
-    const oldEmitFiles = a.emitFiles
+function patchEmitFiles(host: any): ts.TransformerFactory<ts.SourceFile>[] {
+    const oldEmitFiles = host.emitFiles
+    if (oldEmitFiles.__patched instanceof Array) {
+        oldEmitFiles.__patched.length = 0
+        return oldEmitFiles.__patched
+    }
+
+    const dtsTransformers: ts.TransformerFactory<ts.SourceFile>[] = []
     /**
      * Hack
      * Typescript 2.8 does not support transforms for declaration emit
      * see https://github.com/Microsoft/TypeScript/issues/23701
      */
-    a.emitFiles = function newEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, transformers) {
+    host.emitFiles = function newEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, transformers) {
         let newTransformers = transformers
         if (emitOnlyDtsFiles && !transformers || transformers.length === 0) {
             newTransformers = dtsTransformers
@@ -55,7 +59,7 @@ function patchEmitFiles(): ts.TransformerFactory<ts.SourceFile>[] {
 
         return oldEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, newTransformers)
     }
-    a.emitFiles.__patched = dtsTransformers
+    host.emitFiles.__patched = dtsTransformers
 
     return dtsTransformers
 }
@@ -128,15 +132,17 @@ class TransformerPluginFactory {
  *   {transform: '@zerollup/ts-transform-paths', type: 'ls', after: true, someOption: '123'}
  * ]).createTransformers(program)
  */
-export class PluginCreator {
-    private isOldVersion: boolean
+export class PluginCreator<Host extends DeclarationPatchBaseHost> {
+    private host: Host | void
 
     constructor(
         private configs: PluginConfig[],
-        versionMajorMinor?: string | void,
+        host: Host,
         private resolveBaseDir: string = process.cwd()
     ) {
-        this.isOldVersion = compareVersions('2.9', versionMajorMinor || '2.8') < 0
+        this.host = compareVersions('2.9', host.versionMajorMinor || '2.8') < 0
+            ? host
+            : undefined
     }
 
     private resolveFactory(transform: string): PluginFactory {
@@ -156,7 +162,7 @@ export class PluginCreator {
         } = {
             before: [],
             after: [],
-            afterDeclaration: this.isOldVersion ? patchEmitFiles() : []
+            afterDeclaration: this.host ? patchEmitFiles(this.host) : []
         }
         const pluginFactory = new TransformerPluginFactory(main)
 

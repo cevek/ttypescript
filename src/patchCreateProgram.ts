@@ -18,7 +18,7 @@ export function patchCreateProgram<Host extends BaseHost>(
 
         const creator = new PluginCreator(
             (program.getCompilerOptions() as any).plugins,
-            tsm.versionMajorMinor,
+            tsm,
             resolveBaseDir
         )
 
