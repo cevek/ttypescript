@@ -14,7 +14,7 @@ export function patchCreateProgram(
 ) {
     const basedir: string = process.cwd()
     const originCreateProgram = tsm.createProgram
-    ;(tsm as any).createProgram = function newCreateProgram(
+    tsm.createProgram = function newCreateProgram(
         rootNames: ReadonlyArray<string>,
         options: ts.CompilerOptions,
         host?: ts.CompilerHost,

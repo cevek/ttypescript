@@ -2,5 +2,4 @@
 example/*.js
 node_modules
 package-lock.json
-lib/patch.js
-lib/customRequiere.js
+lib
