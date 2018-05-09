@@ -171,15 +171,8 @@ export class PluginCreator {
 
             if (typeof plugin === 'function') {
                 if (config.after) chain.after.push(plugin)
-                if (config.afterDeclaration) chain.afterDeclaration.push(plugin)
-                if (
-                    config.before
-                    || (
-                        config.before === undefined
-                        && config.after === undefined
-                        && config.afterDeclaration === undefined
-                    )
-                ) chain.before.push(plugin)
+                else if (config.afterDeclaration) chain.afterDeclaration.push(plugin)
+                else chain.before.push(plugin)
             } else {
                 if (plugin.before) chain.before.push(plugin.before)
                 if (plugin.after) chain.after.push(plugin.after)
