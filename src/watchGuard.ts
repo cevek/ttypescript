@@ -1,1 +1,1 @@
-module.exports = require('typescript/lib/watchGuard.js');
+export = require('typescript/lib/watchGuard.js')

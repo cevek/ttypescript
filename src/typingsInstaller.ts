@@ -1,1 +1,1 @@
-module.exports = require('typescript/lib/typingsInstallers.js');
+export = require('typescript/lib/typingsInstallers.js')
