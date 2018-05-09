@@ -28,22 +28,14 @@ export function patchCreateProgram<Host extends BaseHost>(
             writeFile?: ts.WriteFileCallback,
             cancellationToken?: ts.CancellationToken,
             emitOnlyDtsFiles?: boolean,
-            customTransformers?: ts.CustomTransformers
+            customTransformers: ts.CustomTransformers = creator.createTransformers(program)
         ): ts.EmitResult {
-            const newCustomTransformers = customTransformers && (
-                    customTransformers.before
-                    || customTransformers.after
-                    || (customTransformers as any).afterDeclaration
-                )
-                ? customTransformers
-                : creator.createTransformers(program)
-
             return originEmit(
                 targetSourceFile,
                 writeFile,
                 cancellationToken,
                 emitOnlyDtsFiles,
-                newCustomTransformers
+                customTransformers
             )
         }
 
