@@ -1,20 +1,12 @@
 import * as ts from 'typescript'
 import {PluginCreator} from './PluginCreator'
 
-export interface BaseHost {
-    createProgram(
-        rootNames: ReadonlyArray<string>,
-        options: ts.CompilerOptions,
-        host?: ts.CompilerHost,
-        oldProgram?: ts.Program
-    ): ts.Program
-    versionMajorMinor: string
-}
+export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>
 
 export function patchCreateProgram<Host extends BaseHost>(
-    tsm: Host
+    tsm: Host,
+    resolveBaseDir: string = process.cwd()
 ): Host {
-    const basedir: string = process.cwd()
     const originCreateProgram = tsm.createProgram
     tsm.createProgram = function newCreateProgram(
         rootNames: ReadonlyArray<string>,
@@ -27,7 +19,7 @@ export function patchCreateProgram<Host extends BaseHost>(
         const creator = new PluginCreator(
             (program.getCompilerOptions() as any).plugins,
             tsm.versionMajorMinor,
-            basedir
+            resolveBaseDir
         )
 
         const originEmit = program.emit

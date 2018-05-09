@@ -135,13 +135,13 @@ export class PluginCreator {
     constructor(
         private configs: PluginConfig[],
         versionMajorMinor?: string | void,
-        private basedir: string = process.cwd()
+        private resolveBaseDir: string = process.cwd()
     ) {
         this.isOldVersion = compareVersions('2.9', versionMajorMinor || '2.8') < 0
     }
 
     private resolveFactory(transform: string): PluginFactory {
-        const modulePath = resolve.sync(transform, {basedir: this.basedir})
+        const modulePath = resolve.sync(transform, {basedir: this.resolveBaseDir})
         const module: PluginFactory | {default: PluginFactory} = require(modulePath)
 
         return typeof (module as any).default === 'function'
