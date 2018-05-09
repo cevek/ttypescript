@@ -1,22 +1,34 @@
-const fs = require('fs');
-const vm = require('vm');
-const { customRequireResolve } = require('./customRequire');
-const tscFileName = customRequireResolve(process.cwd(), 'typescript/lib/tsc.js');
-var typescriptFilename = customRequireResolve(process.cwd(), 'typescript/lib/typescript.js');
-__filename = tscFileName;
-__dirname = require('path').dirname(__filename);
-let content = fs.readFileSync(typescriptFilename, 'utf8');
-content += fs.readFileSync(tscFileName, 'utf8').replace(/^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, '$1').replace('ts.executeCommandLine(ts.sys.args);', 'module.exports = ts;');
-const script = new vm.Script(content, { filename: __filename });
-const context = vm.createContext(
-    Object.assign({}, global, {
-        require,
-        module: {},
-        __filename: __filename,
-        __dirname: __dirname,
-    })
-);
-const ts = script.runInContext(context);
-require('./patchCreateProgram').default(ts, __dirname);
+import * as fs from 'fs'
+import * as vm from 'vm'
+import * as path from 'path'
+import resolve from 'resolve'
+import {patchCreateProgram} from './patchCreateProgram'
 
-ts.executeCommandLine(ts.sys.args);
+const opts = {basedir: process.cwd()}
+
+const tscFileName = resolve.sync('typescript/lib/tsc', opts)
+const typescriptFilename = resolve.sync('typescript/lib/typescript', opts)
+
+__filename = tscFileName
+__dirname = path.dirname(__filename)
+
+let content = fs.readFileSync(typescriptFilename, 'utf8')
+
+content += fs.readFileSync(tscFileName, 'utf8')
+    .replace(/^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, '$1')
+    .replace('ts.executeCommandLine(ts.sys.args);', 'module.exports = ts;')
+
+const script = new vm.Script(content, { filename: __filename })
+
+const context = vm.createContext({
+    ...global,
+    require,
+    module: {},
+    __filename,
+    __dirname,
+})
+
+const tss = script.runInContext(context)
+patchCreateProgram(tss)
+
+tss.executeCommandLine(tss.sys.args)
