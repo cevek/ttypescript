@@ -1,6 +1,3 @@
-import * as ts from 'typescript/lib/typescript'
-import {patchCreateProgram} from './patchCreateProgram'
+import ts from './typescript'
 
-patchCreateProgram(ts)
-
-export default ts
+export = ts
