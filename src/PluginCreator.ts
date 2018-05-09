@@ -149,9 +149,7 @@ export class PluginCreator {
             : module
     }
 
-    createTransformers = (main: TransformerHost) => this._createTransformers(main)
-
-    private _createTransformers(main: TransformerHost): ts.CustomTransformers {
+    createTransformers: (TransformerHost) => ts.CustomTransformers = (main: TransformerHost) => {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[]
             after: ts.TransformerFactory<ts.SourceFile>[]
