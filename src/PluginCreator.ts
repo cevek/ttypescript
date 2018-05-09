@@ -154,7 +154,7 @@ export class PluginCreator<Host extends DeclarationPatchBaseHost> {
             : module
     }
 
-    createTransformers: (TransformerHost) => ts.CustomTransformers = (main: TransformerHost) => {
+    createTransformers(main: TransformerHost) {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[]
             after: ts.TransformerFactory<ts.SourceFile>[]
@@ -169,30 +169,21 @@ export class PluginCreator<Host extends DeclarationPatchBaseHost> {
         for(let config of this.configs) {
             if (!config.transform) continue
             const factory = this.resolveFactory(config.transform)
-            if (config.type && factory.type === undefined) {
-                (factory as any).type = config.type
-            }
+            factory.type = factory.type || config.type;
 
             const plugin = pluginFactory.createPlugin(factory, config)
 
             if (typeof plugin === 'function') {
                 if (config.after) chain.after.push(plugin)
-                if (config.afterDeclaration) chain.afterDeclaration.push(plugin)
-                if (
-                    config.before
-                    || (
-                        config.before === undefined
-                        && config.after === undefined
-                        && config.afterDeclaration === undefined
-                    )
-                ) chain.before.push(plugin)
+                else if (config.afterDeclaration) chain.afterDeclaration.push(plugin)
+                else chain.before.push(plugin)
             } else {
                 if (plugin.before) chain.before.push(plugin.before)
                 if (plugin.after) chain.after.push(plugin.after)
                 if (plugin.afterDeclaration) chain.afterDeclaration.push(plugin.afterDeclaration)
             }
         }
-
+        
         return chain
     }
 }
