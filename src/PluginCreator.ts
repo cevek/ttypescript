@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
 
-export type FactoryType = 'ls' | 'program' | 'opts' | 'checker';
+export type FactoryType = 'ls' | 'program' | 'opts' | 'checker' | 'raw' | 'compilerOptions';
 
 export interface PluginConfig {
     name?: string;
@@ -25,10 +25,17 @@ export interface TransformerPlugin {
 export type FactoryRet = TransformerPlugin | TsTransformerFactory;
 export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => FactoryRet;
 export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => FactoryRet;
-export type CompilerOptionsPattern = (opts: ts.CompilerOptions, config?: PluginConfig) => FactoryRet;
-export type TypeCheckerPattern = (opts: ts.TypeChecker, config?: PluginConfig) => FactoryRet;
-export type DefaultPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
-export type PluginFactory = LSPattern | ProgramPattern | CompilerOptionsPattern | TypeCheckerPattern | DefaultPattern;
+export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => FactoryRet;
+export type ConfigPattern = (config: PluginConfig) => FactoryRet;
+export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => FactoryRet;
+export type RawPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
+export type PluginFactory =
+    | LSPattern
+    | ProgramPattern
+    | ConfigPattern
+    | CompilerOptionsPattern
+    | TypeCheckerPattern
+    | RawPattern;
 
 function patchEmitFiles(host: any): ts.TransformerFactory<ts.SourceFile>[] {
     const oldEmitFiles = host.emitFiles;
@@ -74,16 +81,20 @@ function createTransformerFromPattern({
             ret = (factory as LSPattern)(ls, config);
             break;
         case 'opts':
+            ret = (factory as ConfigPattern)(config);
+            break;
+        case 'compilerOptions':
             ret = (factory as CompilerOptionsPattern)(program.getCompilerOptions(), config);
             break;
         case 'checker':
             ret = (factory as TypeCheckerPattern)(program.getTypeChecker(), config);
             break;
+        case undefined:
         case 'program':
             ret = (factory as ProgramPattern)(program, config);
             break;
-        case undefined:
-            ret = (ctx: ts.TransformationContext) => (factory as DefaultPattern)(ctx, program);
+        case 'raw':
+            ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program);
             break;
         default:
             return never(config.type);
