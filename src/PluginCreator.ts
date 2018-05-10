@@ -1,5 +1,6 @@
 import * as ts from 'typescript'
 import * as resolve from 'resolve'
+import * as path from 'path'
 import compareVersions from 'compare-versions'
 
 export type TransformerPlugin = {
@@ -123,6 +124,8 @@ class TransformerPluginFactory {
     }
 }
 
+let tsNodeIncluded = false
+
 /**
  * @example
  * 
@@ -146,12 +149,29 @@ export class PluginCreator<Host extends DeclarationPatchBaseHost> {
     }
 
     private resolveFactory(transform: string): PluginFactory {
-        const modulePath = resolve.sync(transform, {basedir: this.resolveBaseDir})
-        const module: PluginFactory | {default: PluginFactory} = require(modulePath)
+        if (
+            !tsNodeIncluded
+            && transform.match(/\.ts$/)
+            && (
+                module.parent!.parent === null
+                || module.parent!.parent!.id
+                    .split(/[\/\\]/)
+                    .indexOf('ts-node') === -1
+            )
+        ) {
+            require('ts-node').register({
+                project: path.resolve(__dirname, '..', 'ts-node-config', 'tsconfig.json'),
+                transpileOnly: true
+            })
+            tsNodeIncluded = true
+        }
 
-        return typeof (module as any).default === 'function'
-            ? (module as any).default
-            : module
+        const modulePath = resolve.sync(transform, {basedir: this.resolveBaseDir})
+        const factory: PluginFactory | {default: PluginFactory} = require(modulePath)
+
+        return typeof (factory as any).default === 'function'
+            ? (factory as any).default
+            : factory
     }
 
     createTransformers(main: TransformerHost) {
