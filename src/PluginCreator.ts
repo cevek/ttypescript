@@ -1,26 +1,26 @@
-import * as ts from 'typescript';
-import * as resolve from 'resolve';
-import * as path from 'path';
 import compareVersions from 'compare-versions';
+import * as path from 'path';
+import * as resolve from 'resolve';
+import * as ts from 'typescript';
 
 export type FactoryType = 'ls' | 'program' | 'opts' | 'checker';
 
-export type PluginConfig = {
+export interface PluginConfig {
     name?: string;
     transform?: string;
     type: FactoryType;
     after?: boolean;
     before?: boolean;
     afterDeclaration?: boolean;
-};
+}
 
 export type TsTransformerFactory = ts.TransformerFactory<ts.SourceFile>;
 
-export type TransformerPlugin = {
+export interface TransformerPlugin {
     before?: TsTransformerFactory;
     after?: TsTransformerFactory;
     afterDeclaration?: TsTransformerFactory;
-};
+}
 
 export type FactoryRet = TransformerPlugin | TsTransformerFactory;
 export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => FactoryRet;
@@ -43,13 +43,13 @@ function patchEmitFiles(host: any): ts.TransformerFactory<ts.SourceFile>[] {
      * Typescript 2.8 does not support transforms for declaration emit
      * see https://github.com/Microsoft/TypeScript/issues/23701
      */
-    host.emitFiles = function newEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, transformers) {
+    host.emitFiles = function newEmitFiles(resolver, tsHost, targetSourceFile, emitOnlyDtsFiles, transformers) {
         let newTransformers = transformers;
         if ((emitOnlyDtsFiles && !transformers) || transformers.length === 0) {
             newTransformers = dtsTransformers;
         }
 
-        return oldEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, newTransformers);
+        return oldEmitFiles(resolver, tsHost, targetSourceFile, emitOnlyDtsFiles, newTransformers);
     };
     host.emitFiles.__patched = dtsTransformers;
     return dtsTransformers;
@@ -96,7 +96,6 @@ function createTransformerFromPattern({
     return ret;
 }
 
-
 function never(n: never): never {
     throw new Error('Unexpected type: ' + n);
 }
@@ -120,6 +119,47 @@ export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
         this.host = compareVersions('2.9', host.versionMajorMinor || '2.8') < 0 ? host : undefined;
     }
 
+    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
+        const chain: {
+            before: ts.TransformerFactory<ts.SourceFile>[];
+            after: ts.TransformerFactory<ts.SourceFile>[];
+            afterDeclaration: ts.TransformerFactory<ts.SourceFile>[];
+        } = {
+            before: [],
+            after: [],
+            afterDeclaration: this.host ? patchEmitFiles(this.host) : [],
+        };
+        let ls;
+        let program;
+        if ('ls' in params) ls = params.ls;
+        else {
+            program = params.program;
+        }
+        for (const config of this.configs) {
+            if (!config.transform) {
+                continue;
+            }
+            const factory = this.resolveFactory(config.transform);
+            const transformer = createTransformerFromPattern({
+                factory,
+                config,
+                program,
+                ls,
+            });
+            if (transformer.before) {
+                chain.before.push(transformer.before);
+            }
+            if (transformer.after) {
+                chain.after.push(transformer.after);
+            }
+            if (transformer.afterDeclaration) {
+                chain.afterDeclaration.push(transformer.afterDeclaration);
+            }
+        }
+
+        return chain;
+    }
+
     private resolveFactory(transform: string): PluginFactory {
         if (
             !tsNodeIncluded &&
@@ -141,8 +181,8 @@ export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
 
     private validateConfigs(configs: PluginConfig[]) {
         const pluginObj: PluginConfig = {
-            type: 'ls',
             name: '',
+            type: 'ls',
             transform: '',
             after: true,
             before: true,
@@ -159,36 +199,5 @@ export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
                 }
             }
         }
-    }
-
-    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
-        const chain: {
-            before: ts.TransformerFactory<ts.SourceFile>[];
-            after: ts.TransformerFactory<ts.SourceFile>[];
-            afterDeclaration: ts.TransformerFactory<ts.SourceFile>[];
-        } = {
-            before: [],
-            after: [],
-            afterDeclaration: this.host ? patchEmitFiles(this.host) : [],
-        };
-        let ls;
-        let program;
-        if ('ls' in params) ls = params.ls;
-        else program = params.program;
-        for (const config of this.configs) {
-            if (!config.transform) continue;
-            const factory = this.resolveFactory(config.transform);
-            const transformer = createTransformerFromPattern({
-                factory,
-                config,
-                program,
-                ls,
-            });
-            if (transformer.before) chain.before.push(transformer.before);
-            if (transformer.after) chain.after.push(transformer.after);
-            if (transformer.afterDeclaration) chain.afterDeclaration.push(transformer.afterDeclaration);
-        }
-
-        return chain;
     }
 }
