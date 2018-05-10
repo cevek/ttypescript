@@ -19,7 +19,21 @@ ttypescript uses your installed `typescript` in your `node_modules`
 
 ### tsconfig.json
 
-You just need to add the `customTransformers` block with `before` and(or) `after` object contains array of transformer paths into the `compilerOptions.plugins`
+`compilerOptions.plugins` entries described by PluginConfig:
+
+```ts
+export type PluginConfig = {
+    name?: string
+    transform?: string
+    type?: FactoryType
+    after?: boolean
+    before?: boolean
+    afterDeclaration?: boolean
+    [options: string]: any;
+}
+```
+
+You just need to add the `transform` block with optional `type`, `after`, `afterDeclaration` and plugin-related options.
 
 Don't forget to exclude your transformers in the tsconfig.json
 
@@ -27,12 +41,11 @@ Don't forget to exclude your transformers in the tsconfig.json
 {
     "compilerOptions": {
         "plugins": [
-            {
-                "customTransformers": {
-                    "before": ["transformer-module"],
-                    "after": ["./transformers/my-transformer.ts"]
-                }
-            }
+            { "transform": "transformer-module", "someOption1": 123, "someOption2": 321 },
+            { "transform": "./transformers/my-transformer.ts" },
+            { "transform": "transformer-module", "after": true },
+            { "transform": "transformer-module", "afterDeclaration": true },
+            { "transform": "transformer-module", "type": "ls" }
         ]
     },
     "exclude": ["node_modules", "transformers/**/*"]
@@ -79,22 +92,68 @@ or
 ```
 
 ## Transformers
+
 You can use transformers written in ts or js
 
-As extra feature ttsc provide the `program` as a second argument 
+Transformer plugin entry point described in PluginFactory interface:
 
 ```ts
-import * as ts from 'typescript';
-export default (ctx: ts.TransformationContext, program: ts.Program): ts.Transformer<ts.SourceFile> => {
-    return sourceFile => {
-        function visitor(node: ts.Node): ts.Node {
-            return ts.visitEachChild(node, visitor, ctx);
-        }
-        return ts.visitNode(sourceFile, visitor);
-    };
-};
+export type TransformerPlugin = {
+    before?: ts.TransformerFactory<ts.SourceFile>
+    after?: ts.TransformerFactory<ts.SourceFile>
+    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>
+} | ts.TransformerFactory<ts.SourceFile>
+
+export type PluginFactory = {
+    type: 'ls'
+    (ls: ts.LanguageService, options?: PluginConfig): TransformerPlugin
+} | {
+    type?: 'program'
+    (program: ts.Program, options?: PluginConfig): TransformerPlugin
+} | {
+    type: 'opts'
+    (opts: ts.CompilerOptions, options?: PluginConfig): TransformerPlugin
+} | {
+    type: 'checker'
+    (opts: ts.TypeChecker, options?: PluginConfig): TransformerPlugin
+}
 ```
 
+Multiple plugin formats supported via type modifier from config:
+
+```json
+{
+    "compilerOptions": {
+        "plugins": [
+            { "transform": "transformer1-module", "someOpt": 123},
+            { "transform": "transformer1-module", "type": "ls" },
+            { "transform": "transformer2-module", "type": "opts" },
+            { "transform": "transformer3-module", "type": "checker" }
+        ]
+    }
+}
+```
+
+Without modifier instance of Program passed as first argument.
+
+```ts
+// transformer1-module
+import * as ts from 'typescript'
+export default function myPlugin(program: ts.Program, pluginOptions: MyPluginOptions | void) {
+    // pluginOptions.someOpt === 123
+
+    return {
+        before(
+            transformationContext: ts.TransformationContext
+        ): ts.Transformer<ts.SourceFile> {
+            return (sf: ts.SourceFile) => {
+                // visitor = ...
+                return ts.visitNode(sf, visitor)
+            }
+        }
+    }
+}
+```
 
 ## Example
 
