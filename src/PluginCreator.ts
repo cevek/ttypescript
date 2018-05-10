@@ -2,7 +2,6 @@ import * as ts from 'typescript';
 import * as resolve from 'resolve';
 import * as path from 'path';
 import compareVersions from 'compare-versions';
-import { parseConfigFileTextToJson } from 'typescript/lib/tsserverlibrary';
 
 export type FactoryType = 'ls' | 'program' | 'opts' | 'checker';
 
@@ -97,18 +96,6 @@ function createTransformerFromPattern({
     return ret;
 }
 
-export function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
-    if (!plugins) return [];
-    // old transformers system
-    if (plugins.length === 1 && plugins[0].customTransformers) {
-        const { before = [], after = [] } = plugins[0].customTransformers;
-        return [
-            ...before.map(item => ({ tranform: item, before: true })),
-            ...after.map(item => ({ tranform: item, after: true })),
-        ];
-    }
-    return plugins;
-}
 
 function never(n: never): never {
     throw new Error('Unexpected type: ' + n);
@@ -162,8 +149,7 @@ export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
             afterDeclaration: true,
         };
         const possibleKeys = Object.keys(pluginObj);
-        for (let i = 0; i < configs.length; i++) {
-            const config = configs[i];
+        for (const config of configs) {
             if (!config.name && !config.transform) {
                 throw new Error('tsconfig.json plugins error: Either name or transform must be present');
             }

@@ -1,5 +1,5 @@
 import * as ts from 'typescript'
-import {PluginCreator, preparePluginsFromCompilerOptions} from './PluginCreator'
+import {PluginCreator, PluginConfig} from './PluginCreator'
 
 export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>
 
@@ -42,4 +42,17 @@ export function patchCreateProgram<Host extends BaseHost>(
     }
 
     return tsm
+}
+
+function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
+    if (!plugins) return [];
+    // old transformers system
+    if (plugins.length === 1 && plugins[0].customTransformers) {
+        const { before = [], after = [] } = plugins[0].customTransformers;
+        return [
+            ...before.map(item => ({ tranform: item, before: true })),
+            ...after.map(item => ({ tranform: item, after: true })),
+        ];
+    }
+    return plugins;
 }
