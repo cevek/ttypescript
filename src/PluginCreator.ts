@@ -1,209 +1,208 @@
-import * as ts from 'typescript'
-import * as resolve from 'resolve'
-import * as path from 'path'
-import compareVersions from 'compare-versions'
+import * as ts from 'typescript';
+import * as resolve from 'resolve';
+import * as path from 'path';
+import compareVersions from 'compare-versions';
+import { parseConfigFileTextToJson } from 'typescript/lib/tsserverlibrary';
 
-export type TransformerPlugin = {
-    before?: ts.TransformerFactory<ts.SourceFile>
-    after?: ts.TransformerFactory<ts.SourceFile>
-    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>
-} | ts.TransformerFactory<ts.SourceFile>
-
-export type FactoryType = 'ls' | 'program' | 'opts' | 'checker'
+export type FactoryType = 'ls' | 'program' | 'opts' | 'checker';
 
 export type PluginConfig = {
-    name?: string
-    transform?: string
-    type?: FactoryType
-    after?: boolean
-    before?: boolean
-    afterDeclaration?: boolean
-    [options: string]: any;
-}
+    name?: string;
+    transform?: string;
+    type: FactoryType;
+    after?: boolean;
+    before?: boolean;
+    afterDeclaration?: boolean;
+};
 
-export type PluginFactory = {
-    type: 'ls'
-    (ls: ts.LanguageService, options?: PluginConfig): TransformerPlugin
-} | {
-    type?: 'program'
-    (program: ts.Program, options?: PluginConfig): TransformerPlugin
-} | {
-    type: 'opts'
-    (opts: ts.CompilerOptions, options?: PluginConfig): TransformerPlugin
-} | {
-    type: 'checker'
-    (opts: ts.TypeChecker, options?: PluginConfig): TransformerPlugin
-}
+export type TsTransformerFactory = ts.TransformerFactory<ts.SourceFile>;
 
-export type TransformerHost = ts.LanguageService | ts.Program | ts.CompilerOptions | ts.TypeChecker
+export type TransformerPlugin = {
+    before?: TsTransformerFactory;
+    after?: TsTransformerFactory;
+    afterDeclaration?: TsTransformerFactory;
+};
 
-export type DeclarationPatchBaseHost = Pick<typeof ts, 'versionMajorMinor'>
+export type FactoryRet = TransformerPlugin | TsTransformerFactory;
+export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => FactoryRet;
+export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => FactoryRet;
+export type CompilerOptionsPattern = (opts: ts.CompilerOptions, config?: PluginConfig) => FactoryRet;
+export type TypeCheckerPattern = (opts: ts.TypeChecker, config?: PluginConfig) => FactoryRet;
+export type DefaultPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
+export type PluginFactory = LSPattern | ProgramPattern | CompilerOptionsPattern | TypeCheckerPattern | DefaultPattern;
 
 function patchEmitFiles(host: any): ts.TransformerFactory<ts.SourceFile>[] {
-    const oldEmitFiles = host.emitFiles
+    const oldEmitFiles = host.emitFiles;
     if (oldEmitFiles.__patched instanceof Array) {
-        oldEmitFiles.__patched.length = 0
-        return oldEmitFiles.__patched
+        oldEmitFiles.__patched.length = 0;
+        return oldEmitFiles.__patched;
     }
 
-    const dtsTransformers: ts.TransformerFactory<ts.SourceFile>[] = []
+    const dtsTransformers: ts.TransformerFactory<ts.SourceFile>[] = [];
     /**
      * Hack
      * Typescript 2.8 does not support transforms for declaration emit
      * see https://github.com/Microsoft/TypeScript/issues/23701
      */
     host.emitFiles = function newEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, transformers) {
-        let newTransformers = transformers
-        if (emitOnlyDtsFiles && !transformers || transformers.length === 0) {
-            newTransformers = dtsTransformers
+        let newTransformers = transformers;
+        if ((emitOnlyDtsFiles && !transformers) || transformers.length === 0) {
+            newTransformers = dtsTransformers;
         }
 
-        return oldEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, newTransformers)
-    }
-    host.emitFiles.__patched = dtsTransformers
-
-    return dtsTransformers
+        return oldEmitFiles(resolver, host, targetSourceFile, emitOnlyDtsFiles, newTransformers);
+    };
+    host.emitFiles.__patched = dtsTransformers;
+    return dtsTransformers;
 }
 
-class TransformerPluginFactory {
-    public ls: ts.LanguageService | void
-    public program: ts.Program | void
-    public opts: ts.CompilerOptions | void
-    public checker: ts.TypeChecker | void
-
-    constructor(main: TransformerHost) {
-        this.ls = typeof (main as any).getProgram === 'function'
-            ? main as ts.LanguageService
-            : undefined
-
-        this.program = this.ls
-            ? this.ls.getProgram()
-            : (
-                typeof (main as any).getTypeChecker === 'function'
-                    ? main as ts.Program
-                    : undefined
-            )
-        
-        this.checker = this.program
-            ? this.program.getTypeChecker()
-            : (
-                typeof (main as any).getBaseTypes === 'function'
-                    ? main as ts.TypeChecker
-                    : undefined
-            )
-
-        this.opts = this.program
-            ? this.program.getCompilerOptions()
-            : (
-                typeof (main as any).getBaseTypes === 'function'
-                    ? undefined
-                    : main as ts.CompilerOptions
-            )
+function createTransformerFromPattern({
+    factory,
+    config,
+    program,
+    ls,
+}: {
+    factory: PluginFactory;
+    config: PluginConfig;
+    program: ts.Program;
+    ls?: ts.LanguageService;
+}): TransformerPlugin {
+    const name = config.transform || config.name;
+    let ret: FactoryRet;
+    switch (config.type) {
+        case 'ls':
+            if (!ls) throw new Error(`Plugin ${name} need a LanguageService`);
+            ret = (factory as LSPattern)(ls, config);
+            break;
+        case 'opts':
+            ret = (factory as CompilerOptionsPattern)(program.getCompilerOptions(), config);
+            break;
+        case 'checker':
+            ret = (factory as TypeCheckerPattern)(program.getTypeChecker(), config);
+            break;
+        case 'program':
+            ret = (factory as ProgramPattern)(program, config);
+            break;
+        case undefined:
+            ret = (ctx: ts.TransformationContext) => (factory as DefaultPattern)(ctx, program);
+            break;
+        default:
+            return never(config.type);
     }
-
-    createPlugin(factory: PluginFactory, options: PluginConfig): TransformerPlugin {
-        const name = options.transform || options.name
-        switch (factory.type) {
-            case 'ls':
-                if (!this.ls) throw new Error(`Plugin ${name} need a LanguageService`)
-                return factory(this.ls, options)
-
-            case 'opts':
-                if (!this.opts) throw new Error(`Plugin ${name} need a CompilerOptions`)
-                return factory(this.opts, options)
-
-            case 'checker':
-                if (!this.checker) throw new Error(`Plugin ${name} need a TypeChecker`)
-                return factory(this.checker, options)
-
-            case 'program':
-            default:
-                if (!this.program) throw new Error(`Plugin ${name} need a Program`)
-                return factory(this.program, options)
-        }
+    if (typeof ret === 'function') {
+        if (config.after) return { after: ret };
+        else if (config.afterDeclaration) return { afterDeclaration: ret };
+        else return { before: ret };
     }
+    return ret;
 }
 
-let tsNodeIncluded = false
+export function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
+    if (!plugins) return [];
+    // old transformers system
+    if (plugins.length === 1 && plugins[0].customTransformers) {
+        const { before = [], after = [] } = plugins[0].customTransformers;
+        return [
+            ...before.map(item => ({ tranform: item, before: true })),
+            ...after.map(item => ({ tranform: item, after: true })),
+        ];
+    }
+    return plugins;
+}
+
+function never(n: never): never {
+    throw new Error('Unexpected type: ' + n);
+}
+
+let tsNodeIncluded = false;
 
 /**
  * @example
- * 
+ *
  * new PluginCreator([
  *   {transform: '@zerollup/ts-transform-paths', someOption: '123'},
  *   {transform: '@zerollup/ts-transform-paths', type: 'ls', someOption: '123'},
  *   {transform: '@zerollup/ts-transform-paths', type: 'ls', after: true, someOption: '123'}
- * ]).createTransformers(program)
+ * ], ts).createTransformers({ program })
  */
-export class PluginCreator<Host extends DeclarationPatchBaseHost> {
-    private host: Host | void
+export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
+    private host: Host | undefined;
 
-    constructor(
-        private configs: PluginConfig[],
-        host: Host,
-        private resolveBaseDir: string = process.cwd()
-    ) {
-        this.host = compareVersions('2.9', host.versionMajorMinor || '2.8') < 0
-            ? host
-            : undefined
+    constructor(private configs: PluginConfig[], host: Host, private resolveBaseDir: string = process.cwd()) {
+        this.validateConfigs(configs);
+        this.host = compareVersions('2.9', host.versionMajorMinor || '2.8') < 0 ? host : undefined;
     }
 
     private resolveFactory(transform: string): PluginFactory {
         if (
-            !tsNodeIncluded
-            && transform.match(/\.ts$/)
-            && (
-                module.parent!.parent === null
-                || module.parent!.parent!.id
-                    .split(/[\/\\]/)
-                    .indexOf('ts-node') === -1
-            )
+            !tsNodeIncluded &&
+            transform.match(/\.ts$/) &&
+            (module.parent!.parent === null || module.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
         ) {
             require('ts-node').register({
                 project: path.resolve(__dirname, '..', 'ts-node-config', 'tsconfig.json'),
-                transpileOnly: true
-            })
-            tsNodeIncluded = true
+                transpileOnly: true,
+            });
+            tsNodeIncluded = true;
         }
 
-        const modulePath = resolve.sync(transform, {basedir: this.resolveBaseDir})
-        const factory: PluginFactory | {default: PluginFactory} = require(modulePath)
+        const modulePath = resolve.sync(transform, { basedir: this.resolveBaseDir });
+        const factory: PluginFactory | { default: PluginFactory } = require(modulePath);
 
-        return typeof (factory as any).default === 'function'
-            ? (factory as any).default
-            : factory
+        return typeof (factory as any).default === 'function' ? (factory as any).default : factory;
     }
 
-    createTransformers(main: TransformerHost) {
+    private validateConfigs(configs: PluginConfig[]) {
+        const pluginObj: PluginConfig = {
+            type: 'ls',
+            name: '',
+            transform: '',
+            after: true,
+            before: true,
+            afterDeclaration: true,
+        };
+        const possibleKeys = Object.keys(pluginObj);
+        for (let i = 0; i < configs.length; i++) {
+            const config = configs[i];
+            if (!config.name && !config.transform) {
+                throw new Error('tsconfig.json plugins error: Either name or transform must be present');
+            }
+            for (const key in config) {
+                if (possibleKeys.indexOf(key) === -1) {
+                    throw new Error('tsconfig.json plugins error: Unexpected property in plugins: ' + key);
+                }
+            }
+        }
+    }
+
+    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
         const chain: {
-            before: ts.TransformerFactory<ts.SourceFile>[]
-            after: ts.TransformerFactory<ts.SourceFile>[]
-            afterDeclaration: ts.TransformerFactory<ts.SourceFile>[]
+            before: ts.TransformerFactory<ts.SourceFile>[];
+            after: ts.TransformerFactory<ts.SourceFile>[];
+            afterDeclaration: ts.TransformerFactory<ts.SourceFile>[];
         } = {
             before: [],
             after: [],
-            afterDeclaration: this.host ? patchEmitFiles(this.host) : []
+            afterDeclaration: this.host ? patchEmitFiles(this.host) : [],
+        };
+        let ls;
+        let program;
+        if ('ls' in params) ls = params.ls;
+        else program = params.program;
+        for (const config of this.configs) {
+            if (!config.transform) continue;
+            const factory = this.resolveFactory(config.transform);
+            const transformer = createTransformerFromPattern({
+                factory,
+                config,
+                program,
+                ls,
+            });
+            if (transformer.before) chain.before.push(transformer.before);
+            if (transformer.after) chain.after.push(transformer.after);
+            if (transformer.afterDeclaration) chain.afterDeclaration.push(transformer.afterDeclaration);
         }
-        const pluginFactory = new TransformerPluginFactory(main)
 
-        for(let config of this.configs) {
-            if (!config.transform) continue
-            const factory = this.resolveFactory(config.transform)
-            factory.type = factory.type || config.type;
-
-            const plugin = pluginFactory.createPlugin(factory, config)
-
-            if (typeof plugin === 'function') {
-                if (config.after) chain.after.push(plugin)
-                else if (config.afterDeclaration) chain.afterDeclaration.push(plugin)
-                else chain.before.push(plugin)
-            } else {
-                if (plugin.before) chain.before.push(plugin.before)
-                if (plugin.after) chain.after.push(plugin.after)
-                if (plugin.afterDeclaration) chain.afterDeclaration.push(plugin.afterDeclaration)
-            }
-        }
-        
-        return chain
+        return chain;
     }
 }

@@ -1,5 +1,5 @@
 import * as ts from 'typescript'
-import {PluginCreator} from './PluginCreator'
+import {PluginCreator, preparePluginsFromCompilerOptions} from './PluginCreator'
 
 export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>
 
@@ -15,9 +15,8 @@ export function patchCreateProgram<Host extends BaseHost>(
         oldProgram?: ts.Program
     ): ts.Program {
         const program = originCreateProgram(rootNames, options, host, oldProgram)
-
-        const creator = new PluginCreator(
-            (program.getCompilerOptions() as any).plugins,
+        const pluginCreator = new PluginCreator(
+            preparePluginsFromCompilerOptions(program.getCompilerOptions().plugins),
             tsm,
             resolveBaseDir
         )
@@ -28,7 +27,7 @@ export function patchCreateProgram<Host extends BaseHost>(
             writeFile?: ts.WriteFileCallback,
             cancellationToken?: ts.CancellationToken,
             emitOnlyDtsFiles?: boolean,
-            customTransformers: ts.CustomTransformers = creator.createTransformers(program)
+            customTransformers: ts.CustomTransformers = pluginCreator.createTransformers({program})
         ): ts.EmitResult {
             return originEmit(
                 targetSourceFile,
