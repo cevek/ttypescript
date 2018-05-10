@@ -4,14 +4,8 @@
         "declaration": true,
         "module": "commonjs",
         "strict": true,
-	"moduleResolution": "node",
         "esModuleInterop": true,
-        "rootDir": "src",
-        "outDir": "lib",
-        "declarationDir": "lib",
-    	"noImplicitAny": false
+        "outDir": "lib"
     },
-    "include": [
-      "src/**/*.ts"
-    ]
+    "include": ["src/**/*.ts"]
 }

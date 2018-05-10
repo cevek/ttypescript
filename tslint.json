@@ -14,7 +14,8 @@
             "options": "ignore-same-line"
         },
         "object-literal-sort-keys": false,
-        "member-access": false
+        "member-access": false,
+        "trailing-comma": false
     },
     "rulesDirectory": []
 }

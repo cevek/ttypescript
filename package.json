@@ -9,7 +9,7 @@
   },
   "version": "1.0.9",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
-  "main": "lib/index.js",
+  "main": "lib/typescript.js",
   "files": [
     "*.map",
     "*.js",
