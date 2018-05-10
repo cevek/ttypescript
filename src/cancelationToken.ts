@@ -1,2 +1,2 @@
-import * as cancellationToken from 'typescript/lib/cancellationToken'
-export = cancellationToken
+import * as cancellationToken from 'typescript/lib/cancellationToken';
+export = cancellationToken;

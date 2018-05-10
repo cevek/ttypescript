@@ -1,4 +1,4 @@
-import * as tssl from 'typescript/lib/tsserverlibrary'
-import {patchCreateProgram} from './patchCreateProgram'
+import * as tssl from 'typescript/lib/tsserverlibrary';
+import { patchCreateProgram } from './patchCreateProgram';
 
-export = patchCreateProgram(tssl)
+export = patchCreateProgram(tssl);

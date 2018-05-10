@@ -1,2 +1,2 @@
-import * as wg from 'typescript/lib/watchGuard'
-export = wg
+import * as wg from 'typescript/lib/watchGuard';
+export = wg;

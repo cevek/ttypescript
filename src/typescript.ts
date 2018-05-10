@@ -1,4 +1,4 @@
-import * as ts from 'typescript/lib/typescript'
-import {patchCreateProgram} from './patchCreateProgram'
+import * as ts from 'typescript/lib/typescript';
+import { patchCreateProgram } from './patchCreateProgram';
 
-export = patchCreateProgram(ts)
+export = patchCreateProgram(ts);
