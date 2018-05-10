@@ -7,7 +7,7 @@ export type FactoryType = 'ls' | 'program' | 'opts' | 'checker' | 'raw' | 'compi
 export interface PluginConfig {
     name?: string;
     transform?: string;
-    type: FactoryType;
+    type?: FactoryType;
     after?: boolean;
     before?: boolean;
     afterDeclaration?: boolean;

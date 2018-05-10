@@ -5,7 +5,9 @@
     "ttsserver": "./bin/tsserver"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest",
+    "test.watch": "jest --watch"
   },
   "version": "1.0.9",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
@@ -30,8 +32,31 @@
     "ts-node": "^6.0.2"
   },
   "devDependencies": {
+    "@types/jest": "^22.2.3",
     "@types/node": "^9.6.1",
     "@types/resolve": "0.0.8",
+    "jest": "^22.4.3",
+    "ts-jest": "^22.4.5",
     "typescript": "^2.8.3"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "skipBabel": true,
+        "enableTsDiagnostics": true
+      }
+    },
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testMatch": ["**/__tests__/(*.)(spec|test).(ts|tsx|js)"],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }
