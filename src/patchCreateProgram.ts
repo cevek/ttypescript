@@ -9,13 +9,12 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
         rootNames: ReadonlyArray<string>,
         options: ts.CompilerOptions,
         host?: ts.CompilerHost,
-        oldProgram?: ts.Program,
+        oldProgram?: ts.Program
     ): ts.Program {
         const program = originCreateProgram(rootNames, options, host, oldProgram);
         const pluginCreator = new PluginCreator(
             preparePluginsFromCompilerOptions(program.getCompilerOptions().plugins),
-            tsm,
-            resolveBaseDir,
+            resolveBaseDir
         );
 
         const originEmit = program.emit;
@@ -24,7 +23,7 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
             writeFile?: ts.WriteFileCallback,
             cancellationToken?: ts.CancellationToken,
             emitOnlyDtsFiles?: boolean,
-            customTransformers: ts.CustomTransformers = pluginCreator.createTransformers({ program }),
+            customTransformers: ts.CustomTransformers = pluginCreator.createTransformers({ program })
         ): ts.EmitResult {
             return originEmit(targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, customTransformers);
         };
@@ -41,8 +40,8 @@ function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
     if (plugins.length === 1 && plugins[0].customTransformers) {
         const { before = [], after = [] } = plugins[0].customTransformers;
         return [
-            ...before.map((item) => ({ tranform: item, before: true })),
-            ...after.map((item) => ({ tranform: item, after: true })),
+            ...before.map((item: string) => ({ tranform: item, before: true })),
+            ...after.map((item: string) => ({ tranform: item, after: true })),
         ];
     }
     return plugins;
