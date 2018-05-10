@@ -1,4 +1,3 @@
-import compareVersions from 'compare-versions';
 import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
@@ -36,31 +35,6 @@ export type PluginFactory =
     | CompilerOptionsPattern
     | TypeCheckerPattern
     | RawPattern;
-
-function patchEmitFiles(host: any): ts.TransformerFactory<ts.SourceFile>[] {
-    const oldEmitFiles = host.emitFiles;
-    if (oldEmitFiles.__patched instanceof Array) {
-        oldEmitFiles.__patched.length = 0;
-        return oldEmitFiles.__patched;
-    }
-
-    const dtsTransformers: ts.TransformerFactory<ts.SourceFile>[] = [];
-    /**
-     * Hack
-     * Typescript 2.8 does not support transforms for declaration emit
-     * see https://github.com/Microsoft/TypeScript/issues/23701
-     */
-    host.emitFiles = function newEmitFiles(resolver, tsHost, targetSourceFile, emitOnlyDtsFiles, transformers) {
-        let newTransformers = transformers;
-        if ((emitOnlyDtsFiles && !transformers) || transformers.length === 0) {
-            newTransformers = dtsTransformers;
-        }
-
-        return oldEmitFiles(resolver, tsHost, targetSourceFile, emitOnlyDtsFiles, newTransformers);
-    };
-    host.emitFiles.__patched = dtsTransformers;
-    return dtsTransformers;
-}
 
 function createTransformerFromPattern({
     factory,
@@ -120,14 +94,11 @@ let tsNodeIncluded = false;
  *   {transform: '@zerollup/ts-transform-paths', someOption: '123'},
  *   {transform: '@zerollup/ts-transform-paths', type: 'ls', someOption: '123'},
  *   {transform: '@zerollup/ts-transform-paths', type: 'ls', after: true, someOption: '123'}
- * ], ts).createTransformers({ program })
+ * ]).createTransformers({ program })
  */
-export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
-    private host: Host | undefined;
-
-    constructor(private configs: PluginConfig[], host: Host, private resolveBaseDir: string = process.cwd()) {
+export class PluginCreator {
+    constructor(private configs: PluginConfig[], private resolveBaseDir: string = process.cwd()) {
         this.validateConfigs(configs);
-        this.host = compareVersions('2.9', host.versionMajorMinor || '2.8') < 0 ? host : undefined;
     }
 
     createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
@@ -138,12 +109,14 @@ export class PluginCreator<Host extends Pick<typeof ts, 'versionMajorMinor'>> {
         } = {
             before: [],
             after: [],
-            afterDeclaration: this.host ? patchEmitFiles(this.host) : [],
+            afterDeclaration: [],
         };
         let ls;
         let program;
-        if ('ls' in params) ls = params.ls;
-        else {
+        if ('ls' in params) {
+            ls = params.ls;
+            program = ls.getProgram();
+        } else {
             program = params.program;
         }
         for (const config of this.configs) {
