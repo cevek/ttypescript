@@ -12,10 +12,12 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
         oldProgram?: ts.Program
     ): ts.Program {
         const program = originCreateProgram(rootNames, options, host, oldProgram);
-        const pluginCreator = new PluginCreator(
-            preparePluginsFromCompilerOptions(program.getCompilerOptions().plugins),
-            resolveBaseDir
+        const compilerOptions = program.getCompilerOptions();
+        const plugins = preparePluginsFromCompilerOptions(
+            getPluginsFromCompilerOptions(compilerOptions, resolveBaseDir)
         );
+        // console.log(plugins);
+        const pluginCreator = new PluginCreator(plugins, resolveBaseDir);
 
         const originEmit = program.emit;
         program.emit = function newEmit(
@@ -32,6 +34,28 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
     };
 
     return tsm;
+}
+
+function getPluginsFromCompilerOptions(compilerOptions: ts.CompilerOptions, resolveBaseDir: string) {
+    let plugins = compilerOptions.plugins;
+    if (compilerOptions.configFilePath === undefined) {
+        const configFileNamePath = ts.findConfigFile(resolveBaseDir, ts.sys.fileExists);
+        if (configFileNamePath) {
+            const config = readConfig(configFileNamePath, resolveBaseDir, ts);
+            if (config !== undefined) {
+                plugins = config.raw.compilerOptions.plugins || [];
+            }
+        }
+    }
+    return plugins;
+}
+
+function readConfig(configFileNamePath: string, projectDir: string, tsm: typeof ts) {
+    const result = tsm.readConfigFile(configFileNamePath, tsm.sys.readFile);
+    if (result.error) {
+        throw new Error('tsconfig.json error: ' + result.error.messageText);
+    }
+    return tsm.parseJsonConfigFileContent(result.config, tsm.sys, projectDir, undefined, configFileNamePath);
 }
 
 function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
