@@ -154,16 +154,23 @@ export default function (program: ts.Program, pluginOptions: {}) {
 ```
 
 Examples of transformers
+
 [`{transform: "ts-transformer-keys", type: "program"}`](https://github.com/kimamula/ts-transformer-keys) 
+
 [`{transform: "ts-transformer-enumerate", type: "program"}`](https://github.com/kimamula/ts-transformer-enumerate)
+
 [`{transform: "ts-transform-graphql-tag", type: "program"}`](https://github.com/firede/ts-transform-graphql-tag) 
+
 [`{transform: "ts-transform-img", type: "config"}`](https://github.com/longlho/ts-transform-img) 
+
 [`{transform: "ts-transform-css-modules", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
+
 [`{transform: "ts-transform-react-intl", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
+
 [`{transform: "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
 
-Tutorial how to write a typescript transformer
-https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943
+[Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
+
 
 ## Example
 An example project is in the `example` directory
