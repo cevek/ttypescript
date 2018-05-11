@@ -7,6 +7,18 @@ And there is no way to compile your files using custom transformers using `tsc` 
 
 TTypescript (Transformer TypeScript) solves this problem by patching on the fly the compile module to use transformers from `tsconfig.json`.
 
+TTypescript is a drop-in replacement for all typescript modules, located in ``` node_modules/typescript/lib ``` directory:
+
+```ts
+import * as ts from 'ttypescript'
+import * as tsServer from 'ttypescript/lib/tsserver'
+import * as watchGuard from 'ttypescript/lib/watchGuard'
+```
+
+In command line, instead of tsc and tsserver, use ttsc and ttsserver wrappers. This wrappers try to use locally installed typescript first.
+
+No version lock-ins - typescript used as peer dependency.
+
 ## How to install
 
 ```
