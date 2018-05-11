@@ -1,9 +1,10 @@
+import { dirname } from 'path';
 import * as ts from 'typescript';
 import { PluginConfig, PluginCreator } from './PluginCreator';
 
 export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>;
 
-export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBaseDir: string = process.cwd()): Host {
+export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBaseDir = process.cwd()): Host {
     const originCreateProgram = tsm.createProgram;
     tsm.createProgram = function newCreateProgram(
         rootNames: ReadonlyArray<string>,
@@ -13,10 +14,11 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
     ): ts.Program {
         const program = originCreateProgram(rootNames, options, host, oldProgram);
         const compilerOptions = program.getCompilerOptions();
-        const plugins = preparePluginsFromCompilerOptions(
-            getPluginsFromCompilerOptions(compilerOptions, resolveBaseDir)
-        );
-        // console.log(plugins);
+        const tsconfigPath = getTsConfigPath(program, resolveBaseDir);
+        if (tsconfigPath) {
+            resolveBaseDir = dirname(tsconfigPath);
+        }
+        const plugins = preparePluginsFromCompilerOptions(getPluginsFromCompilerOptions(compilerOptions, tsconfigPath));
         const pluginCreator = new PluginCreator(plugins, resolveBaseDir);
 
         const originEmit = program.emit;
@@ -36,12 +38,21 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
     return tsm;
 }
 
-function getPluginsFromCompilerOptions(compilerOptions: ts.CompilerOptions, resolveBaseDir: string) {
+function getTsConfigPath(program: ts.Program, defaultDir: string) {
+    const compilerOptions = program.getCompilerOptions();
+    const rootFileNames = program.getRootFileNames();
+    if (compilerOptions.configFilePath) {
+        return compilerOptions.configFilePath as string;
+    }
+    const dir = rootFileNames.length > 0 ? dirname(rootFileNames[0]) : defaultDir;
+    return ts.findConfigFile(dir, ts.sys.fileExists);
+}
+
+function getPluginsFromCompilerOptions(compilerOptions: ts.CompilerOptions, tsconfigPath: string | undefined) {
     let plugins = compilerOptions.plugins;
     if (plugins === undefined && compilerOptions.configFilePath === undefined) {
-        const configFileNamePath = ts.findConfigFile(resolveBaseDir, ts.sys.fileExists);
-        if (configFileNamePath) {
-            const config = readConfig(configFileNamePath, resolveBaseDir, ts);
+        if (tsconfigPath) {
+            const config = readConfig(tsconfigPath, dirname(tsconfigPath), ts);
             if (config !== undefined) {
                 plugins = config.raw.compilerOptions.plugins || [];
             }
