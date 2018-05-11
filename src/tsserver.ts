@@ -2,4 +2,5 @@
 import * as tsServer from 'typescript/lib/tsserver';
 import { patchCreateProgram } from './patchCreateProgram';
 
-export = patchCreateProgram(tsServer);
+patchCreateProgram(tsServer);
+export = tsServer;
