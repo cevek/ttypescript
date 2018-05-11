@@ -85,7 +85,8 @@ function never(n: never): never {
 }
 
 let tsNodeIncluded = false;
-
+// to fix recursion bug, see usage below
+const requireStack: string[] = [];
 /**
  * @example
  *
@@ -123,6 +124,8 @@ export class PluginCreator {
                 continue;
             }
             const factory = this.resolveFactory(config.transform);
+            // if recursion
+            if (factory === undefined) continue;
             const transformer = createTransformerFromPattern({
                 factory,
                 config,
@@ -143,7 +146,7 @@ export class PluginCreator {
         return chain;
     }
 
-    private resolveFactory(transform: string): PluginFactory {
+    private resolveFactory(transform: string): PluginFactory | undefined {
         if (
             !tsNodeIncluded &&
             transform.match(/\.ts$/) &&
@@ -157,9 +160,21 @@ export class PluginCreator {
         }
 
         const modulePath = resolve.sync(transform, { basedir: this.resolveBaseDir });
-        const factory: PluginFactory | { default: PluginFactory } = require(modulePath);
-
-        return typeof (factory as any).default === 'function' ? (factory as any).default : factory;
+        // in ts-node occurs error cause recursion: 
+        //   ts-node file.ts -> createTransformers -> require transformer.ts -> createTransformers -> require transformer.ts -> ...
+        //   this happens cause ts-node uses to compile transformers the same config included this transformer
+        //   so this stack checks that if we already required this file we are in the reqursion
+        if (requireStack.indexOf(modulePath) > -1) return;
+        requireStack.push(modulePath);
+        const factoryModule: PluginFactory | { default: PluginFactory } = require(modulePath);
+        requireStack.pop();
+        const factory = 'default' in factoryModule ? factoryModule.default : factoryModule;
+        if (typeof factory !== 'function') {
+            throw new Error(
+                `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + JSON.stringify(factoryModule)
+            );
+        }
+        return factory;
     }
 
     private validateConfigs(configs: PluginConfig[]) {
