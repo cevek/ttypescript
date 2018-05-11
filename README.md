@@ -129,6 +129,24 @@ ts-node -C ttypescript index.ts
         }
     }
 ```
+
+### Rollup
+```js
+// rollup.config.js
+import ttypescript from 'ttypescript'
+import tsPlugin from 'rollup-plugin-typescript2'
+
+export default {
+    // ...
+    plugins: [
+        // ...
+        tsPlugin({
+            typescript: ttypescript
+        })
+    ]
+}
+```
+
 ### VC Code
 If you want to compile your project with VC Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttypescript`: 
 ```
