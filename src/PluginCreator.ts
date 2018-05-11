@@ -13,20 +13,19 @@ export interface PluginConfig {
     afterDeclaration?: boolean;
 }
 
-export type TsTransformerFactory = ts.TransformerFactory<ts.SourceFile>;
-
-export interface TransformerPlugin {
-    before?: TsTransformerFactory;
-    after?: TsTransformerFactory;
-    afterDeclaration?: TsTransformerFactory;
+export interface TransformerBasePlugin {
+    before?: ts.TransformerFactory<ts.SourceFile>;
+    after?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
 }
 
-export type FactoryRet = TransformerPlugin | TsTransformerFactory;
-export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => FactoryRet;
-export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => FactoryRet;
-export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => FactoryRet;
-export type ConfigPattern = (config: PluginConfig) => FactoryRet;
-export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => FactoryRet;
+export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
+
+export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => TransformerPlugin;
+export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => TransformerPlugin;
+export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => TransformerPlugin;
+export type ConfigPattern = (config: PluginConfig) => TransformerPlugin;
+export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => TransformerPlugin;
 export type RawPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
 export type PluginFactory =
     | LSPattern
@@ -46,9 +45,9 @@ function createTransformerFromPattern({
     config: PluginConfig;
     program: ts.Program;
     ls?: ts.LanguageService;
-}): TransformerPlugin {
+}): TransformerBasePlugin {
     const name = config.transform || config.name;
-    let ret: FactoryRet;
+    let ret: TransformerPlugin;
     switch (config.type) {
         case 'ls':
             if (!ls) throw new Error(`Plugin ${name} need a LanguageService`);

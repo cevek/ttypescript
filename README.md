@@ -22,15 +22,13 @@ ttypescript uses your installed `typescript` in your `node_modules`
 `compilerOptions.plugins` entries described by PluginConfig:
 
 ```ts
-export type PluginConfig = {
-    name?: string
-    transform?: string
-    type?: FactoryType
-    after?: boolean
-    before?: boolean
-    afterDeclaration?: boolean
-    [options: string]: any;
+export interface TransformerBasePlugin {
+    before?: ts.TransformerFactory<ts.SourceFile>;
+    after?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
 }
+
+export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 ```
 
 You just need to add the `transform` block with optional `type`, `after`, `afterDeclaration` and plugin-related options.
@@ -98,25 +96,19 @@ You can use transformers written in ts or js
 Transformer plugin entry point described in PluginFactory interface:
 
 ```ts
-export type TransformerPlugin = {
-    before?: ts.TransformerFactory<ts.SourceFile>
-    after?: ts.TransformerFactory<ts.SourceFile>
-    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>
-} | ts.TransformerFactory<ts.SourceFile>
-
-export type PluginFactory = {
-    type: 'ls'
-    (ls: ts.LanguageService, options?: PluginConfig): TransformerPlugin
-} | {
-    type?: 'program'
-    (program: ts.Program, options?: PluginConfig): TransformerPlugin
-} | {
-    type: 'opts'
-    (opts: ts.CompilerOptions, options?: PluginConfig): TransformerPlugin
-} | {
-    type: 'checker'
-    (opts: ts.TypeChecker, options?: PluginConfig): TransformerPlugin
-}
+export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => TransformerPlugin;
+export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => TransformerPlugin;
+export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => TransformerPlugin;
+export type ConfigPattern = (config: PluginConfig) => TransformerPlugin;
+export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => TransformerPlugin;
+export type RawPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
+export type PluginFactory =
+    | LSPattern
+    | ProgramPattern
+    | ConfigPattern
+    | CompilerOptionsPattern
+    | TypeCheckerPattern
+    | RawPattern;
 ```
 
 Multiple plugin formats supported via type modifier from config:
