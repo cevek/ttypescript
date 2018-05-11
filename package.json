@@ -9,7 +9,7 @@
     "test": "jest",
     "test.watch": "jest --watch"
   },
-  "version": "1.0.9",
+  "version": "1.0.11",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "files": [
