@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
 
-export type FactoryType = 'ls' | 'program' | 'opts' | 'checker' | 'raw' | 'compilerOptions';
+export type FactoryType = 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
 
 export interface PluginConfig {
     name?: string;
@@ -53,7 +53,7 @@ function createTransformerFromPattern({
             if (!ls) throw new Error(`Plugin ${name} need a LanguageService`);
             ret = (factory as LSPattern)(ls, config);
             break;
-        case 'opts':
+        case 'config':
             ret = (factory as ConfigPattern)(config);
             break;
         case 'compilerOptions':
