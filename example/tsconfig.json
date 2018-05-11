@@ -4,9 +4,7 @@
         "module": "commonjs",
         "plugins": [
             {
-                "customTransformers": {
-                    "before": ["./transformers/transformer.ts"]
-                }
+                "transform": "./transformers/transformer.ts"
             }
         ]
     },

@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
-        "target": "esnext",
+        "target": "es5",
+        "declaration": true,
         "module": "commonjs",
         "strict": true,
-        "esModuleInterop": true
+        "outDir": "lib"
     },
-    "include": [
-      "lib/**/*.ts"
-    ]
+    "include": ["src/**/*.ts"],
+    "exclude": ["src/__tests__/**"]
 }
