@@ -38,7 +38,7 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
 
 function getPluginsFromCompilerOptions(compilerOptions: ts.CompilerOptions, resolveBaseDir: string) {
     let plugins = compilerOptions.plugins;
-    if (compilerOptions.configFilePath === undefined) {
+    if (plugins === undefined && compilerOptions.configFilePath === undefined) {
         const configFileNamePath = ts.findConfigFile(resolveBaseDir, ts.sys.fileExists);
         if (configFileNamePath) {
             const config = readConfig(configFileNamePath, resolveBaseDir, ts);
