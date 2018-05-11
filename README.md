@@ -19,19 +19,70 @@ ttypescript uses your installed `typescript` in your `node_modules`
 
 ### tsconfig.json
 
-`compilerOptions.plugins` entries described by PluginConfig:
+Set a transformer path to the `tsconfig.json` in `compilerOptions` section `plugin` array:
+```
+{
+    "compilerOptions": {
+        "plugins": [
+            { "transform": "transformer-module" },
+        ]
+    }
+}
+```
+
+plugin entries described by `PluginConfig`:
 
 ```ts
-export interface TransformerBasePlugin {
-    before?: ts.TransformerFactory<ts.SourceFile>;
-    after?: ts.TransformerFactory<ts.SourceFile>;
-    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
+interface PluginConfig {
+    transform?: string; // path to transformer
+    type?: 'program' | 'checker' | 'raw' | 'compilerOptions' | 'config';  // decribed below
+    after?: boolean; // should transformer applied after all ones
+    before?: boolean; // should transformer applied before all ones
+    afterDeclaration?: boolean; // transformer for d.ts files, supports from TS2.9
+    [options: string]: any; // any other properties provided to the transformer as config argument
 }
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 ```
 
 You just need to add the `transform` block with optional `type`, `after`, `afterDeclaration` and plugin-related options.
+
+`transform` can accept npm module or local file path (.ts or .js) related to `tsconfig.json`
+
+
+### PluginConfig.type
+Because currently transformers can run only programmatically, most of them use factory wrapper with different signatures.
+For the possible to work with any of them you can specify `type` in the plugin config
+By default will be used `program`
+#### program 
+If the transformer has a factory signature using `program` as first argument: 
+```ts
+(program: ts.Program, config?: PluginConfig) => ts.TransformerFactory
+```
+use type `program` in the plugin config `{ "transform": "transformer-module", "type": "program" }`
+
+
+#### config
+for the signature with transformer's config:
+```ts
+(config: any) => ts.TransformerFactory
+```
+
+#### checker
+```ts
+(checker: ts.TypeChecker, config?: PluginConfig) => ts.TransformerFactory
+```
+
+#### raw
+for the signature without factory wrapper:
+```ts
+ts.TransformerFactory
+```
+
+#### compilerOptions
+```ts
+(compilerOptions: ts.CompilerOptions, config?: PluginConfig) => ts.TransformerFactory
+```
 
 Don't forget to exclude your transformers in the tsconfig.json
 
@@ -53,36 +104,33 @@ Don't forget to exclude your transformers in the tsconfig.json
 ### Command line
 
 Like usual `tsc`, all arguments work the same way.
-
 ```
-npx ttsc
+ttsc
 ```
 
-Be careful `npx ttsc test.ts` like `tsc test.ts` doesn't use your tsconfig.json and transformations won't be applied
 
 ### ts-node
 
 ```
-npx ts-node --compiler ttypescript index.ts
+ts-node --compiler ttypescript index.ts
 or
-npx ts-node -C ttypescript index.ts
+ts-node -C ttypescript index.ts
 ```
 
 ### Webpack
-
 ```js
     {
         test: /\.(ts|tsx)$/,
-        include: paths.appSrc,
+        loader: require.resolve('awesome-typescript-loader'),
+        // or
         loader: require.resolve('ts-loader'),
         options: {
             compiler: 'ttypescript'
         }
     }
 ```
-
 ### VC Code
-If you want to compile your project with VC Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttsc`: 
+If you want to compile your project with VC Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttypescript`: 
 ```
 "typescript.tsdk": "/usr/local/lib/node_modules/ttypescript/lib",
 or 
@@ -93,62 +141,19 @@ or
 
 You can use transformers written in ts or js
 
-Transformer plugin entry point described in PluginFactory interface:
-
-```ts
-export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => TransformerPlugin;
-export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => TransformerPlugin;
-export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => TransformerPlugin;
-export type ConfigPattern = (config: PluginConfig) => TransformerPlugin;
-export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => TransformerPlugin;
-export type RawPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
-export type PluginFactory =
-    | LSPattern
-    | ProgramPattern
-    | ConfigPattern
-    | CompilerOptionsPattern
-    | TypeCheckerPattern
-    | RawPattern;
-```
-
-Multiple plugin formats supported via type modifier from config:
-
-```json
-{
-    "compilerOptions": {
-        "plugins": [
-            { "transform": "transformer1-module", "someOpt": 123},
-            { "transform": "transformer1-module", "type": "ls" },
-            { "transform": "transformer2-module", "type": "opts" },
-            { "transform": "transformer3-module", "type": "checker" }
-        ]
-    }
-}
-```
-
-Without modifier instance of Program passed as first argument.
-
 ```ts
 // transformer1-module
 import * as ts from 'typescript'
-export default function myPlugin(program: ts.Program, pluginOptions: MyPluginOptions | void) {
-    // pluginOptions.someOpt === 123
-
-    return {
-        before(
-            transformationContext: ts.TransformationContext
-        ): ts.Transformer<ts.SourceFile> {
-            return (sf: ts.SourceFile) => {
-                // visitor = ...
-                return ts.visitNode(sf, visitor)
-            }
+export default function (program: ts.Program, pluginOptions: {}) {
+    return (ctx: ts.TransformationContext) => {
+        return (sourceFile: ts.SourceFile) => {
+            return sourceFile;
         }
     }
 }
 ```
 
 ## Example
-
 An example project is in the `example` directory
 
 ## License
