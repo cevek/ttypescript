@@ -30,6 +30,6 @@ const context = vm.createContext({
 });
 
 const tss = script.runInContext(context);
-patchCreateProgram(tss);
+patchCreateProgram(tss, true);
 
 tss.executeCommandLine(tss.sys.args);

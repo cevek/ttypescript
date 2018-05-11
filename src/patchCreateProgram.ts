@@ -4,22 +4,27 @@ import { PluginConfig, PluginCreator } from './PluginCreator';
 
 export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>;
 
-export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBaseDir = process.cwd()): Host {
+export function patchCreateProgram<Host extends BaseHost>(
+    tsm: Host,
+    forceReadConfig = false,
+    projectDir = process.cwd()
+): Host {
     const originCreateProgram = tsm.createProgram;
     tsm.createProgram = function newCreateProgram(
         rootNames: ReadonlyArray<string>,
-        options: ts.CompilerOptions,
+        compilerOptions: ts.CompilerOptions,
         host?: ts.CompilerHost,
         oldProgram?: ts.Program
     ): ts.Program {
-        const program = originCreateProgram(rootNames, options, host, oldProgram);
-        const compilerOptions = program.getCompilerOptions();
-        const tsconfigPath = getTsConfigPath(program, resolveBaseDir);
-        if (tsconfigPath) {
-            resolveBaseDir = dirname(tsconfigPath);
+        if (forceReadConfig) {
+            const info = getConfig(compilerOptions, rootNames, projectDir);
+            compilerOptions = info.compilerOptions;
+            projectDir = info.projectDir;
         }
-        const plugins = preparePluginsFromCompilerOptions(getPluginsFromCompilerOptions(compilerOptions, tsconfigPath));
-        const pluginCreator = new PluginCreator(plugins, resolveBaseDir);
+        const program = originCreateProgram(rootNames, compilerOptions, host, oldProgram);
+
+        const plugins = preparePluginsFromCompilerOptions(compilerOptions.plugins);
+        const pluginCreator = new PluginCreator(plugins, projectDir);
 
         const originEmit = program.emit;
         program.emit = function newEmit(
@@ -38,27 +43,24 @@ export function patchCreateProgram<Host extends BaseHost>(tsm: Host, resolveBase
     return tsm;
 }
 
-function getTsConfigPath(program: ts.Program, defaultDir: string) {
-    const compilerOptions = program.getCompilerOptions();
-    const rootFileNames = program.getRootFileNames();
-    if (compilerOptions.configFilePath) {
-        return compilerOptions.configFilePath as string;
-    }
-    const dir = rootFileNames.length > 0 ? dirname(rootFileNames[0]) : defaultDir;
-    return ts.findConfigFile(dir, ts.sys.fileExists);
-}
-
-function getPluginsFromCompilerOptions(compilerOptions: ts.CompilerOptions, tsconfigPath: string | undefined) {
-    let plugins = compilerOptions.plugins;
-    if (plugins === undefined && compilerOptions.configFilePath === undefined) {
+function getConfig(compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyArray<string>, defaultDir: string) {
+    if (compilerOptions.configFilePath === undefined) {
+        const dir = rootFileNames.length > 0 ? dirname(rootFileNames[0]) : defaultDir;
+        const tsconfigPath = ts.findConfigFile(dir, ts.sys.fileExists);
         if (tsconfigPath) {
+            const projectDir = dirname(tsconfigPath);
             const config = readConfig(tsconfigPath, dirname(tsconfigPath), ts);
-            if (config !== undefined) {
-                plugins = config.raw.compilerOptions.plugins || [];
-            }
+            compilerOptions = { ...config.options, ...compilerOptions };
+            return {
+                projectDir,
+                compilerOptions,
+            };
         }
     }
-    return plugins;
+    return {
+        projectDir: dirname(compilerOptions.configFilePath as string),
+        compilerOptions,
+    };
 }
 
 function readConfig(configFileNamePath: string, projectDir: string, tsm: typeof ts) {
