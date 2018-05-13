@@ -15,7 +15,7 @@ import * as tsServer from 'ttypescript/lib/tsserver'
 import * as watchGuard from 'ttypescript/lib/watchGuard'
 ```
 
-In command line, instead of tsc and tsserver, use ttsc and ttsserver wrappers. This wrappers try to use locally installed typescript first.
+Instead of tsc and tsserver, use ttsc and ttsserver wrappers. This wrappers try to use locally installed typescript first.
 
 No version lock-ins - typescript used as peer dependency.
 
@@ -42,59 +42,91 @@ Set a transformer path to the `tsconfig.json` in `compilerOptions` section `plug
 }
 ```
 
-plugin entries described by `PluginConfig`:
+plugin entries described in `PluginConfig`:
 
 ```ts
-interface PluginConfig {
-    transform?: string; // path to transformer
-    type?: 'program' | 'checker' | 'raw' | 'compilerOptions' | 'config';  // decribed below
-    after?: boolean; // should transformer applied after all ones
-    before?: boolean; // should transformer applied before all ones
-    afterDeclaration?: boolean; // transformer for d.ts files, supports from TS2.9
-    [options: string]: any; // any other properties provided to the transformer as config argument
-}
+export interface PluginConfig {
+    /**
+     * Path to transformer or transformer module name
+     */
+    transform?: string;
 
-export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
+    /**
+     * Plugin entry point format type, default is program
+     */
+    type?: 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
+
+    /**
+     * Should transformer applied after all ones
+     */
+    after?: boolean;
+
+    /**
+     * Should transformer applied for d.ts files, supports from TS2.9
+     */
+    afterDeclaration?: boolean;
+    /**
+     * any other properties provided to the transformer as config argument
+     * */
+    [options: string]: any;
+}
 ```
 
 You just need to add the `transform` block with optional `type`, `after`, `afterDeclaration` and plugin-related options.
 
 `transform` can accept npm module or local file path (.ts or .js) related to `tsconfig.json`
 
-
 ### PluginConfig.type
 Because currently transformers can run only programmatically, most of them use factory wrapper with different signatures.
 For the possible to work with any of them you can specify `type` in the plugin config
 By default will be used `program`
+
+Most of transformers exports ``` ts.TransformerFactory<ts.SourceFile> ```. But better to export TransformerBasePlugin, described below. In most cases it's a plugin responsibility to when run a transformer.
+
+```ts
+export interface TransformerBasePlugin {
+    before?: ts.TransformerFactory<ts.SourceFile>;
+    after?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
+}
+
+export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
+```
+
 #### program 
 If the transformer has a factory signature using `program` as first argument: 
 ```ts
-(program: ts.Program, config?: PluginConfig) => ts.TransformerFactory
+(program: ts.Program, config?: PluginConfig) => TransformerPlugin
 ```
-use type `program` in the plugin config `{ "transform": "transformer-module", "type": "program" }`
+Plugin config entry: `{ "transform": "transformer-module" }`.
 
 
 #### config
-for the signature with transformer's config:
+For the signature with transformer's config:
 ```ts
-(config: any) => ts.TransformerFactory
+(config: PluginConfig) => TransformerPlugin
 ```
+Plugin config entry: `{ "transform": "transformer-module", type: "config" }`.
 
 #### checker
+For the signature with ts.TypeChecker:
 ```ts
-(checker: ts.TypeChecker, config?: PluginConfig) => ts.TransformerFactory
+(checker: ts.TypeChecker, config?: PluginConfig) => TransformerPlugin
 ```
+Plugin config entry: `{ "transform": "transformer-module", type: "checker" }`.
 
 #### raw
-for the signature without factory wrapper:
+For the signature without factory wrapper:
 ```ts
-ts.TransformerFactory
+ts.TransformerFactory<ts.SourceFile>
 ```
+Plugin config entry: `{ "transform": "transformer-module", type: "raw" }`.
 
 #### compilerOptions
 ```ts
-(compilerOptions: ts.CompilerOptions, config?: PluginConfig) => ts.TransformerFactory
+(compilerOpts: ts.CompilerOptions, config?: PluginConfig) => TransformerPlugin
 ```
+Plugin config entry: `{ "transform": "transformer-module", type: "compilerOptions" }`.
 
 Don't forget to exclude your transformers in the tsconfig.json
 
@@ -119,7 +151,6 @@ Like usual `tsc`, all arguments work the same way.
 ```
 ttsc
 ```
-
 
 ### ts-node
 
@@ -185,11 +216,11 @@ export default function (program: ts.Program, pluginOptions: {}) {
 
 Examples of transformers
 
-[`{transform: "ts-transformer-keys", type: "program"}`](https://github.com/kimamula/ts-transformer-keys) 
+[`{transform: "ts-transformer-keys"}`](https://github.com/kimamula/ts-transformer-keys) 
 
-[`{transform: "ts-transformer-enumerate", type: "program"}`](https://github.com/kimamula/ts-transformer-enumerate)
+[`{transform: "ts-transformer-enumerate"}`](https://github.com/kimamula/ts-transformer-enumerate)
 
-[`{transform: "ts-transform-graphql-tag", type: "program"}`](https://github.com/firede/ts-transform-graphql-tag) 
+[`{transform: "ts-transform-graphql-tag"}`](https://github.com/firede/ts-transform-graphql-tag) 
 
 [`{transform: "ts-transform-img", type: "config"}`](https://github.com/longlho/ts-transform-img) 
 
@@ -203,7 +234,7 @@ Examples of transformers
 
 
 ## Example
-An example project is in the `example` directory
+An example project is in the [example](./example) directory
 
 ## License
 MIT License

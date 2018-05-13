@@ -2,15 +2,31 @@ import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
 
-export type FactoryType = 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
-
 export interface PluginConfig {
-    name?: string;
+    /**
+     * Path to transformer or transformer module name
+     */
     transform?: string;
-    type?: FactoryType;
+
+    /**
+     * Plugin entry point format type, default is program
+     */
+    type?: 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
+
+    /**
+     * Should transformer applied after all ones
+     */
     after?: boolean;
-    before?: boolean;
+
+    /**
+     * Should transformer applied for d.ts files, supports from TS2.9
+     */
     afterDeclaration?: boolean;
+
+    /**
+     * Any other properties provided to the transformer as config argument
+     */
+    [options: string]: any;
 }
 
 export interface TransformerBasePlugin {
@@ -46,7 +62,8 @@ function createTransformerFromPattern({
     program: ts.Program;
     ls?: ts.LanguageService;
 }): TransformerBasePlugin {
-    const name = config.transform || config.name;
+    const name = config.transform;
+    if (!name) throw new Error('Not a valid config entry: "transform" key not found');
     let ret: TransformerPlugin;
     switch (config.type) {
         case 'ls':
