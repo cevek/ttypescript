@@ -4,6 +4,10 @@ import * as ts from 'typescript';
 
 export interface PluginConfig {
     /**
+     * Language Server TypeScript Plugin name
+     */
+    name?: string;
+    /**
      * Path to transformer or transformer module name
      */
     transform?: string;
@@ -174,7 +178,7 @@ export class PluginCreator {
         const modulePath = resolve.sync(transform, { basedir: this.resolveBaseDir });
         // in ts-node occurs error cause recursion:
         //   ts-node file.ts -> createTransformers -> require transformer.ts
-        //         -> createTransformers -> require transformer.ts -> ...
+        //        -> createTransformers -> require transformer.ts -> ...
         //   this happens cause ts-node uses to compile transformers the same config included this transformer
         //   so this stack checks that if we already required this file we are in the reqursion
         if (requireStack.indexOf(modulePath) > -1) return;
@@ -192,15 +196,16 @@ export class PluginCreator {
 
     private validateConfigs(configs: PluginConfig[]) {
         const pluginObj: PluginConfig = {
-            type: 'ls',
+            name: '',
             transform: '',
+            type: 'ls',
             after: true,
             afterDeclaration: true,
         };
         const possibleKeys = Object.keys(pluginObj);
         for (const config of configs) {
-            if (!config.transform) {
-                throw new Error('tsconfig.json plugins error: Either name or transform must be present');
+            if (!config.name && !config.transform) {
+                throw new Error('tsconfig.json plugins error: transform must be present');
             }
             for (const key in config) {
                 if (possibleKeys.indexOf(key) === -1) {
