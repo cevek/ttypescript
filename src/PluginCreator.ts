@@ -22,11 +22,6 @@ export interface PluginConfig {
      * Should transformer applied for d.ts files, supports from TS2.9
      */
     afterDeclaration?: boolean;
-
-    /**
-     * Any other properties provided to the transformer as config argument
-     */
-    [options: string]: any;
 }
 
 export interface TransformerBasePlugin {
@@ -177,8 +172,9 @@ export class PluginCreator {
         }
 
         const modulePath = resolve.sync(transform, { basedir: this.resolveBaseDir });
-        // in ts-node occurs error cause recursion: 
-        //   ts-node file.ts -> createTransformers -> require transformer.ts -> createTransformers -> require transformer.ts -> ...
+        // in ts-node occurs error cause recursion:
+        //   ts-node file.ts -> createTransformers -> require transformer.ts
+        //         -> createTransformers -> require transformer.ts -> ...
         //   this happens cause ts-node uses to compile transformers the same config included this transformer
         //   so this stack checks that if we already required this file we are in the reqursion
         if (requireStack.indexOf(modulePath) > -1) return;
@@ -196,16 +192,14 @@ export class PluginCreator {
 
     private validateConfigs(configs: PluginConfig[]) {
         const pluginObj: PluginConfig = {
-            name: '',
             type: 'ls',
             transform: '',
             after: true,
-            before: true,
             afterDeclaration: true,
         };
         const possibleKeys = Object.keys(pluginObj);
         for (const config of configs) {
-            if (!config.name && !config.transform) {
+            if (!config.transform) {
                 throw new Error('tsconfig.json plugins error: Either name or transform must be present');
             }
             for (const key in config) {
