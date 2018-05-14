@@ -77,8 +77,8 @@ function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
     if (plugins.length === 1 && plugins[0].customTransformers) {
         const { before = [], after = [] } = plugins[0].customTransformers;
         return [
-            ...before.map((item: string) => ({ tranform: item, before: true })),
-            ...after.map((item: string) => ({ tranform: item, after: true })),
+            ...before.map((item: string) => ({ transform: item, before: true })),
+            ...after.map((item: string) => ({ transform: item, after: true })),
         ];
     }
     return plugins;
