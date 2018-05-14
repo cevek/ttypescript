@@ -29,7 +29,7 @@ describe('PluginCreator', () => {
 
         expect(createTransformers(config)).toEqual({
             after: [],
-            afterDeclaration: [],
+            afterDeclarations: [],
             before: [simpleTransformer],
         });
     });
@@ -44,7 +44,7 @@ describe('PluginCreator', () => {
 
         expect(createTransformers(config)).toEqual({
             after: [simpleTransformer],
-            afterDeclaration: [],
+            afterDeclarations: [],
             before: [],
         });
     });
@@ -58,7 +58,7 @@ describe('PluginCreator', () => {
 
         expect(createTransformers(config)).toEqual({
             after: [advancedTransformer],
-            afterDeclaration: [],
+            afterDeclarations: [],
             before: [],
         });
     });

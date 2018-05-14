@@ -65,7 +65,7 @@ export interface PluginConfig {
     /**
      * Should transformer applied for d.ts files, supports from TS2.9
      */
-    afterDeclaration?: boolean;
+    afterDeclarations?: boolean;
     /**
      * any other properties provided to the transformer as config argument
      * */
@@ -73,7 +73,7 @@ export interface PluginConfig {
 }
 ```
 
-You just need to add the `transform` block with optional `type`, `after`, `afterDeclaration` and plugin-related options.
+You just need to add the `transform` block with optional `type`, `after`, `afterDeclarations` and plugin-related options.
 
 `transform` can accept npm module or local file path (.ts or .js) related to `tsconfig.json`
 
@@ -91,7 +91,7 @@ But better to export TransformerBasePlugin, described below. In most cases it's 
 export interface TransformerBasePlugin {
     before?: ts.TransformerFactory<ts.SourceFile>;
     after?: ts.TransformerFactory<ts.SourceFile>;
-    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclarations?: ts.TransformerFactory<ts.SourceFile>;
 }
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
@@ -143,7 +143,7 @@ Don't forget to exclude your transformers in the tsconfig.json
             { "transform": "transformer-module", "someOption1": 123, "someOption2": 321 },
             { "transform": "./transformers/my-transformer.ts" },
             { "transform": "transformer-module", "after": true },
-            { "transform": "transformer-module", "afterDeclaration": true },
+            { "transform": "transformer-module", "afterDeclarations": true },
             { "transform": "transformer-module", "type": "ls" }
         ]
     },

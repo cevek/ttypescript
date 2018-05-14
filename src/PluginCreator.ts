@@ -25,13 +25,13 @@ export interface PluginConfig {
     /**
      * Should transformer applied for d.ts files, supports from TS2.9
      */
-    afterDeclaration?: boolean;
+    afterDeclarations?: boolean;
 }
 
 export interface TransformerBasePlugin {
     before?: ts.TransformerFactory<ts.SourceFile>;
     after?: ts.TransformerFactory<ts.SourceFile>;
-    afterDeclaration?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclarations?: ts.TransformerFactory<ts.SourceFile>;
 }
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
@@ -90,7 +90,7 @@ function createTransformerFromPattern({
     }
     if (typeof ret === 'function') {
         if (config.after) return { after: ret };
-        else if (config.afterDeclaration) return { afterDeclaration: ret };
+        else if (config.afterDeclarations) return { afterDeclarations: ret };
         else return { before: ret };
     }
     return ret;
@@ -121,11 +121,11 @@ export class PluginCreator {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[];
             after: ts.TransformerFactory<ts.SourceFile>[];
-            afterDeclaration: ts.TransformerFactory<ts.SourceFile>[];
+            afterDeclarations: ts.TransformerFactory<ts.SourceFile>[];
         } = {
             before: [],
             after: [],
-            afterDeclaration: [],
+            afterDeclarations: [],
         };
         let ls;
         let program;
@@ -154,8 +154,8 @@ export class PluginCreator {
             if (transformer.after) {
                 chain.after.push(transformer.after);
             }
-            if (transformer.afterDeclaration) {
-                chain.afterDeclaration.push(transformer.afterDeclaration);
+            if (transformer.afterDeclarations) {
+                chain.afterDeclarations.push(transformer.afterDeclarations);
             }
         }
 
@@ -200,7 +200,7 @@ export class PluginCreator {
             transform: '',
             type: 'ls',
             after: true,
-            afterDeclaration: true,
+            afterDeclarations: true,
         };
         const possibleKeys = Object.keys(pluginObj);
         for (const config of configs) {
