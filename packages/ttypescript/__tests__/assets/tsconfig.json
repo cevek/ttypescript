@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "plugins": [{ "transform": "../transforms/before.ts" }]
+    }
+}
