@@ -11,7 +11,7 @@
     "build": "lerna exec --scope=ttypescript -- tsc",
     "test": "jest",
     "test.watch": "jest --watch",
-    "publish": "npm test && npm run build && lerna publish --conventional-commits --yes"
+    "publish": "npm run build && npm test && lerna publish --conventional-commits --yes"
   },
   "author": "cevek",
   "repository": {
