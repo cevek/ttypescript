@@ -240,7 +240,7 @@ Examples of transformers
 
 
 ## Example
-An example project is in the [example](./example) directory
+An example project is in the [example](./packages/ttypescript-examples) directory
 
 ## License
 MIT License
