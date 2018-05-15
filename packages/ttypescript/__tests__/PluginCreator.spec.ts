@@ -1,4 +1,4 @@
-import { PluginCreator, PluginConfig } from '../PluginCreator';
+import { PluginCreator, PluginConfig } from 'ttypescript/lib/PluginCreator';
 import { simpleTransformer } from './transforms/transform-simple';
 import { advancedTransformer } from './transforms/transform-advanced';
 import { createTransformers } from './helpers';
