@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
+import { inspect } from 'util';
 
 export interface PluginConfig {
     /**
@@ -36,12 +37,16 @@ export interface TransformerBasePlugin {
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 
-export type LSPattern = (ls: ts.LanguageService, config?: PluginConfig) => TransformerPlugin;
-export type ProgramPattern = (program: ts.Program, config?: PluginConfig) => TransformerPlugin;
-export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: PluginConfig) => TransformerPlugin;
-export type ConfigPattern = (config: PluginConfig) => TransformerPlugin;
-export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: PluginConfig) => TransformerPlugin;
-export type RawPattern = (context: ts.TransformationContext, program?: ts.Program) => ts.Transformer<ts.SourceFile>;
+export type LSPattern = (ls: ts.LanguageService, config?: {}) => TransformerPlugin;
+export type ProgramPattern = (program: ts.Program, config?: {}) => TransformerPlugin;
+export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: {}) => TransformerPlugin;
+export type ConfigPattern = (config: {}) => TransformerPlugin;
+export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: {}) => TransformerPlugin;
+export type RawPattern = (
+    context: ts.TransformationContext,
+    program?: ts.Program,
+    config?: {}
+) => ts.Transformer<ts.SourceFile>;
 export type PluginFactory =
     | LSPattern
     | ProgramPattern
@@ -61,36 +66,36 @@ function createTransformerFromPattern({
     program: ts.Program;
     ls?: ts.LanguageService;
 }): TransformerBasePlugin {
-    const name = config.transform;
-    if (!name) throw new Error('Not a valid config entry: "transform" key not found');
+    const { transform, after, afterDeclarations, name, type, ...cleanConfig } = config;
+    if (!transform) throw new Error('Not a valid config entry: "transform" key not found');
     let ret: TransformerPlugin;
     switch (config.type) {
         case 'ls':
-            if (!ls) throw new Error(`Plugin ${name} need a LanguageService`);
-            ret = (factory as LSPattern)(ls, config);
+            if (!ls) throw new Error(`Plugin ${transform} need a LanguageService`);
+            ret = (factory as LSPattern)(ls, cleanConfig);
             break;
         case 'config':
-            ret = (factory as ConfigPattern)(config);
+            ret = (factory as ConfigPattern)(cleanConfig);
             break;
         case 'compilerOptions':
-            ret = (factory as CompilerOptionsPattern)(program.getCompilerOptions(), config);
+            ret = (factory as CompilerOptionsPattern)(program.getCompilerOptions(), cleanConfig);
             break;
         case 'checker':
-            ret = (factory as TypeCheckerPattern)(program.getTypeChecker(), config);
+            ret = (factory as TypeCheckerPattern)(program.getTypeChecker(), cleanConfig);
             break;
         case undefined:
         case 'program':
-            ret = (factory as ProgramPattern)(program, config);
+            ret = (factory as ProgramPattern)(program, cleanConfig);
             break;
         case 'raw':
-            ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program);
+            ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program, cleanConfig);
             break;
         default:
             return never(config.type);
     }
     if (typeof ret === 'function') {
-        if (config.after) return { after: ret };
-        else if (config.afterDeclarations) return { afterDeclarations: ret };
+        if (after) return { after: ret };
+        else if (afterDeclarations) return { afterDeclarations: ret };
         else return { before: ret };
     }
     return ret;
@@ -188,7 +193,7 @@ export class PluginCreator {
         const factory = 'default' in factoryModule ? factoryModule.default : factoryModule;
         if (typeof factory !== 'function') {
             throw new Error(
-                `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + JSON.stringify(factoryModule)
+                `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + inspect(factoryModule)
             );
         }
         return factory;

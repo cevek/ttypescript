@@ -16,7 +16,8 @@
         "object-literal-sort-keys": false,
         "member-access": false,
         "trailing-comma": false,
-        "ordered-imports": false
+        "ordered-imports": false,
+        "max-line-length": false
     },
     "rulesDirectory": []
 }
