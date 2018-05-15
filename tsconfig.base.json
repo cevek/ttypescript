@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "declaration": true,
+        "module": "commonjs",
+        "strict": true,
+        "baseUrl": "packages",
+        "paths": {
+            "ttypescript/lib/*": ["ttypescript/src/*"],
+            "ttypescript": ["ttypescript/src/typescript"],
+            "ttypescript-*": ["ttypescript-*/src"]
+        }
+    }
+}

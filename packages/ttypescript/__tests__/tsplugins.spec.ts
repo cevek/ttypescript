@@ -1,6 +1,6 @@
-import * as ts from '../typescript';
+import * as ts from 'ttypescript';
 
-describe('typescript', () => {
+describe('tsplugins', () => {
     it('should skip ts plugin without errors', () => {
         const res = ts.transpileModule('var a = 1;', {
             compilerOptions: {

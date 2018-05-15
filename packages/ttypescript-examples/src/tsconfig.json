@@ -1,7 +1,10 @@
 {
     "compilerOptions": {
         "target": "es5",
+        "declaration": true,
         "module": "commonjs",
+        "strict": true,
+        "outDir": "../dist",
         "plugins": [
             {
                 "transform": "./transformers/transformer.ts"

@@ -2,6 +2,5 @@
 node_modules
 example
 src
-.prettierrc.js
 tslint.json
 tsconfig.json

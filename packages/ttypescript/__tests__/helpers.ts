@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { PluginCreator, PluginConfig } from '../PluginCreator';
+import { PluginCreator, PluginConfig } from 'ttypescript/lib/PluginCreator';
 import * as path from 'path';
 
 export function createTransformers(config: PluginConfig[]): ts.CustomTransformers {

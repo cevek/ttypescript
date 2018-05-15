@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "declaration": true,
+        "module": "commonjs",
+        "strict": true,
+        "outDir": "dist",
+        "plugins": [
+            {
+                "transform": "./src/transformers/transformer.ts"
+            }
+        ]
+    },
+    "include": ["src/**/*", "node_modules/ttypescript/**/*"],
+    "exclude": ["src/transformers/**/*"]
+}

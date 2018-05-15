@@ -1,10 +1,41 @@
-import * as ts from '../typescript';
+import * as ts from 'ttypescript';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const exampleDir = path.resolve(__dirname, '..', '..', 'ttypescript-examples', 'src');
+
 describe('typescript', () => {
-    it('should apply transformer from config', () => {
-        const exampleDir = path.resolve(__dirname, '..', '..', 'example');
+    it('should apply transformer from legacy config', () => {
+        const content = fs.readFileSync(path.join(exampleDir, 'test.ts')).toString();
+
+        const res = ts.transpileModule(content, {
+            compilerOptions: {
+                plugins: [
+                    {
+                        customTransformers: {
+                            before: [
+                                path.join(exampleDir, 'transformers', 'transformer.ts'),
+                            ],
+                            after: [
+                                path.join(exampleDir, 'transformers', 'transformer.ts'),
+                            ],
+                        },
+                    },
+                ] as any,
+            },
+        });
+
+        const result = `var a = { b: 1 };
+function abc() {
+    var c = a && a.b;
+}
+console.log(abc.toString());
+`;
+
+        expect(res.outputText).toEqual(result);
+    });
+
+    it('should apply transformer from default config', () => {
         const content = fs.readFileSync(path.join(exampleDir, 'test.ts')).toString();
 
         const res = ts.transpileModule(content, {
@@ -26,9 +57,7 @@ console.log(abc.toString());
 
         expect(res.outputText).toEqual(result);
     });
-});
 
-describe('3rd party', () => {
     it('should run 3rd party transformers', () => {
         const res = ts.transpileModule('var x = 1;', {
             compilerOptions: {

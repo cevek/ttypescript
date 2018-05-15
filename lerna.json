@@ -1,0 +1,12 @@
+{
+  "lerna": "2.11.0",
+  "command": {
+    "init": {
+      "exact": true
+    }
+  },
+  "packages": [
+    "packages/*"
+  ],
+  "version": "1.4.0"
+}

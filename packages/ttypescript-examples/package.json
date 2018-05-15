@@ -1,0 +1,31 @@
+{
+  "name": "ttypescript-examples",
+  "version": "1.4.0",
+  "description": "TTypescript examples",
+  "scripts": {
+    "build": "cd src && ts-node -C ttypescript test.ts",
+    "build.ttsc": "cd src && ttsc"
+  },
+  "private": true,
+  "author": "cevek",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cevek/ttypescript.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/cevek/ttypescript/packages/ttypescript-examples/#readme",
+  "keywords": [
+    "typescript",
+    "wrapper",
+    "ttypescript",
+    "examples",
+    "plugin",
+    "config"
+  ],
+  "devDependencies": {
+    "ttypescript": "^1.4.0",
+    "ts-node": "^6.0.2",
+    "@types/node": "^9.6.1",
+    "typescript": "^2.8.3"
+  }
+}
