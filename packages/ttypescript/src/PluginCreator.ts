@@ -173,11 +173,15 @@ export class PluginCreator {
         if (
             !tsNodeIncluded &&
             transform.match(/\.ts$/) &&
-            (module.parent!.parent === null || module.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
+            (module.parent!.parent === null || module.parent!.parent!.parent === null || module.parent!.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
         ) {
             require('ts-node').register({
-                project: path.resolve(__dirname, '..', 'ts-node-config', 'tsconfig.json'),
                 transpileOnly: true,
+                skipProject: true,
+                compilerOptions: {
+                    target: 'es2018',
+                    module: 'commonjs',
+                }
             });
             tsNodeIncluded = true;
         }
