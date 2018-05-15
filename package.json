@@ -8,7 +8,7 @@
     "clean.all": "lerna clean --yes && rm -rf package-lock.json packages/*/package-lock.json node_modules packages/*/lib packages/*/dist",
     "debug": "node --inspect-brk ./node_modules/jest/bin/jest --runInBand --no-cache --no-watchman",
     "postinstall": "lerna bootstrap --hoist",
-    "build": "lerna exec -- tsc",
+    "build": "lerna exec --scope=ttypescript -- tsc",
     "test": "jest",
     "test.watch": "jest --watch",
     "publish": "npm test && npm run build && lerna publish --conventional-commits --yes"
