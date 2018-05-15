@@ -67,6 +67,8 @@ function createTransformerFromPattern({
     ls?: ts.LanguageService;
 }): TransformerBasePlugin {
     const { transform, after, afterDeclarations, name, type, ...cleanConfig } = config;
+    // just to check for future prop addition to PluginConfig
+    const temp: PluginConfig = { transform, after, afterDeclarations, name, type };
     if (!transform) throw new Error('Not a valid config entry: "transform" key not found');
     let ret: TransformerPlugin;
     switch (config.type) {
