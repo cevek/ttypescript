@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.4.3"></a>
+## [1.4.3](https://github.com/cevek/ttypescript/compare/v1.4.2...v1.4.3) (2018-05-17)
+
+
+### Bug Fixes
+
+* compiler options for transformers ([3cc1167](https://github.com/cevek/ttypescript/commit/3cc1167))
+* Run build before tests ([77df108](https://github.com/cevek/ttypescript/commit/77df108))
+
+
+### Features
+
+* Add travis config ([6811b4e](https://github.com/cevek/ttypescript/commit/6811b4e))
+* Fix travis config name ([2529c8f](https://github.com/cevek/ttypescript/commit/2529c8f))
+* Publish with travis ([228c43a](https://github.com/cevek/ttypescript/commit/228c43a))
+
+
+
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/cevek/ttypescript/compare/v1.4.1...v1.4.2) (2018-05-17)
 
