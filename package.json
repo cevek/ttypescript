@@ -9,9 +9,9 @@
     "debug": "node --inspect-brk ./node_modules/jest/bin/jest --runInBand --no-cache --no-watchman",
     "postinstall": "lerna bootstrap --hoist",
     "build": "lerna exec --scope=ttypescript -- tsc",
-    "test": "jest",
-    "test.watch": "jest --watch",
-    "publish": "npm run build && npm test && lerna publish --conventional-commits --yes"
+    "test": "npm run build && jest",
+    "test.watch": "npm run build && jest --watch",
+    "publish": "npm test && lerna publish --conventional-commits --yes"
   },
   "author": "cevek",
   "repository": {
