@@ -4,3 +4,4 @@ example
 src
 tslint.json
 tsconfig.json
+travis.yml
