@@ -179,7 +179,7 @@ export class PluginCreator {
                 transpileOnly: true,
                 skipProject: true,
                 compilerOptions: {
-                    target: 'es2018',
+                    target: 'es5',
                     module: 'commonjs',
                 }
             });
