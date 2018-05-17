@@ -1,7 +1,6 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "target": "esnext",
         "outDir": "lib"
     },
     "exclude": ["__tests__", "lib"]
