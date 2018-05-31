@@ -1,6 +1,6 @@
 {
   "name": "ttypescript-examples",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "TTypescript examples",
   "scripts": {
     "build": "cd src && ts-node -C ttypescript test.ts",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/node": "^9.6.1",
     "ts-node": "^6.0.2",
-    "ttypescript": "^1.4.3",
+    "ttypescript": "^1.4.4",
     "typescript": "^2.8.3"
   }
 }
