@@ -62,4 +62,13 @@ describe('PluginCreator', () => {
             before: [],
         });
     });
+    it('should provide custom config', () => {
+        const config: PluginConfig[] = [{ transform: './transforms/transform-advanced.ts', some: 1, bla: 2 }];
+
+        expect(createTransformers(config)).toEqual({
+            after: [advancedTransformer],
+            afterDeclarations: [],
+            before: [],
+        });
+    });
 });

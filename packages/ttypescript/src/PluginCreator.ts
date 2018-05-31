@@ -206,23 +206,23 @@ export class PluginCreator {
     }
 
     private validateConfigs(configs: PluginConfig[]) {
-        const pluginObj: PluginConfig = {
-            name: '',
-            transform: '',
-            type: 'ls',
-            after: true,
-            afterDeclarations: true,
-        };
-        const possibleKeys = Object.keys(pluginObj);
+        // const pluginObj: PluginConfig = {
+        //     name: '',
+        //     transform: '',
+        //     type: 'ls',
+        //     after: true,
+        //     afterDeclarations: true,
+        // };
+        // const possibleKeys = Object.keys(pluginObj);
         for (const config of configs) {
             if (!config.name && !config.transform) {
                 throw new Error('tsconfig.json plugins error: transform must be present');
             }
-            for (const key in config) {
-                if (possibleKeys.indexOf(key) === -1) {
-                    throw new Error('tsconfig.json plugins error: Unexpected property in plugins: ' + key);
-                }
-            }
+            // for (const key in config) {
+            //     if (possibleKeys.indexOf(key) === -1) {
+            //         throw new Error('tsconfig.json plugins error: Unexpected property in plugins: ' + key);
+            //     }
+            // }
         }
     }
 }
