@@ -11,7 +11,7 @@
     "build": "lerna exec --scope=ttypescript -- tsc",
     "test": "npm run build && jest",
     "test.watch": "npm run build && jest --watch",
-    "publish": "npm test && lerna publish --skip-npm --conventional-commits --yes"
+    "publish": "npm test && lerna publish --conventional-commits --yes"
   },
   "author": "cevek",
   "repository": {
@@ -37,6 +37,6 @@
     "ts-transform-react-intl": "^0.2.2",
     "ts-transformer-enumerate": "^0.3.0",
     "ts-transformer-keys": "^0.3.1",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.1"
   }
 }

@@ -10,20 +10,40 @@ export function patchCreateProgram<Host extends BaseHost>(
     projectDir = process.cwd()
 ): Host {
     const originCreateProgram = tsm.createProgram;
-    tsm.createProgram = function newCreateProgram(
+
+    function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
+    function createProgram(
         rootNames: ReadonlyArray<string>,
-        compilerOptions: ts.CompilerOptions,
+        options: ts.CompilerOptions,
         host?: ts.CompilerHost,
-        oldProgram?: ts.Program
+        oldProgram?: ts.Program,
+        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
+    ): ts.Program;
+    function createProgram(
+        rootNamesOrOptions: ReadonlyArray<string> | ts.CreateProgramOptions,
+        _options?: ts.CompilerOptions,
+        _host?: ts.CompilerHost,
+        _oldProgram?: ts.Program,
+        _configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
     ): ts.Program {
+        const createProgramOptions: ts.CreateProgramOptions = Array.isArray(rootNamesOrOptions)
+            ? {
+                  rootNames: rootNamesOrOptions,
+                  options: _options!,
+                  host: _host,
+                  oldProgram: _oldProgram,
+                  configFileParsingDiagnostics: _configFileParsingDiagnostics,
+              }
+            : (rootNamesOrOptions as ts.CreateProgramOptions);
+
         if (forceReadConfig) {
-            const info = getConfig(compilerOptions, rootNames, projectDir);
-            compilerOptions = info.compilerOptions;
+            const info = getConfig(createProgramOptions.options, createProgramOptions.rootNames, projectDir);
+            createProgramOptions.options = info.compilerOptions;
             projectDir = info.projectDir;
         }
-        const program = originCreateProgram(rootNames, compilerOptions, host, oldProgram);
+        const program = originCreateProgram(createProgramOptions);
 
-        const plugins = preparePluginsFromCompilerOptions(compilerOptions.plugins);
+        const plugins = preparePluginsFromCompilerOptions(createProgramOptions.options.plugins);
         const pluginCreator = new PluginCreator(plugins, projectDir);
 
         const originEmit = program.emit;
@@ -38,8 +58,8 @@ export function patchCreateProgram<Host extends BaseHost>(
         };
 
         return program;
-    };
-
+    }
+    tsm.createProgram = createProgram;
     return tsm;
 }
 

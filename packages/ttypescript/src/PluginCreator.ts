@@ -32,7 +32,7 @@ export interface PluginConfig {
 export interface TransformerBasePlugin {
     before?: ts.TransformerFactory<ts.SourceFile>;
     after?: ts.TransformerFactory<ts.SourceFile>;
-    afterDeclarations?: ts.TransformerFactory<ts.SourceFile>;
+    afterDeclarations?: ts.TransformerFactory<ts.SourceFile | ts.Bundle>;
 }
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
@@ -97,7 +97,7 @@ function createTransformerFromPattern({
     }
     if (typeof ret === 'function') {
         if (after) return { after: ret };
-        else if (afterDeclarations) return { afterDeclarations: ret };
+        else if (afterDeclarations) return { afterDeclarations: ret as ts.TransformerFactory<ts.SourceFile | ts.Bundle> };
         else return { before: ret };
     }
     return ret;
@@ -128,7 +128,7 @@ export class PluginCreator {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[];
             after: ts.TransformerFactory<ts.SourceFile>[];
-            afterDeclarations: ts.TransformerFactory<ts.SourceFile>[];
+            afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[];
         } = {
             before: [],
             after: [],
