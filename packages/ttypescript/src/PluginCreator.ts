@@ -138,7 +138,7 @@ export class PluginCreator {
         let program;
         if ('ls' in params) {
             ls = params.ls;
-            program = ls.getProgram();
+            program = ls.getProgram()!;
         } else {
             program = params.program;
         }

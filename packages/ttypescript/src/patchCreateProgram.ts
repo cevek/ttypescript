@@ -4,12 +4,29 @@ import { PluginConfig, PluginCreator } from './PluginCreator';
 
 export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>;
 
+declare module 'typescript' {
+    interface CreateProgramOptions {
+        rootNames: ReadonlyArray<string>;
+        options: ts.CompilerOptions;
+        projectReferences?: ReadonlyArray<ts.ProjectReference>;
+        host?: ts.CompilerHost;
+        oldProgram?: ts.Program;
+        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>;
+    }
+    interface ProjectReference {
+        path: string;
+        originalPath?: string;
+        prepend?: boolean;
+        circular?: boolean;
+    }
+}
+
 export function patchCreateProgram<Host extends BaseHost>(
     tsm: Host,
     forceReadConfig = false,
     projectDir = process.cwd()
 ): Host {
-    const originCreateProgram = tsm.createProgram;
+    const originCreateProgram = tsm.createProgram as any;
 
     function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
     function createProgram(
@@ -21,29 +38,40 @@ export function patchCreateProgram<Host extends BaseHost>(
     ): ts.Program;
     function createProgram(
         rootNamesOrOptions: ReadonlyArray<string> | ts.CreateProgramOptions,
-        _options?: ts.CompilerOptions,
-        _host?: ts.CompilerHost,
-        _oldProgram?: ts.Program,
-        _configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
+        options?: ts.CompilerOptions,
+        host?: ts.CompilerHost,
+        oldProgram?: ts.Program,
+        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
     ): ts.Program {
-        const createProgramOptions: ts.CreateProgramOptions = Array.isArray(rootNamesOrOptions)
-            ? {
-                  rootNames: rootNamesOrOptions,
-                  options: _options!,
-                  host: _host,
-                  oldProgram: _oldProgram,
-                  configFileParsingDiagnostics: _configFileParsingDiagnostics,
-              }
-            : (rootNamesOrOptions as ts.CreateProgramOptions);
+        let rootNames;
+        let createOpts: ts.CreateProgramOptions | undefined;
+        if (!Array.isArray(rootNamesOrOptions)) {
+            createOpts = rootNamesOrOptions as ts.CreateProgramOptions;
+        }
+        if (createOpts) {
+            rootNames = createOpts.rootNames;
+            options = createOpts.options;
+            host = createOpts.host;
+            oldProgram = createOpts.oldProgram;
+            configFileParsingDiagnostics = createOpts.configFileParsingDiagnostics;
+        } else {
+            options = options!;
+            rootNames = rootNamesOrOptions as ReadonlyArray<string>;
+        }
 
         if (forceReadConfig) {
-            const info = getConfig(createProgramOptions.options, createProgramOptions.rootNames, projectDir);
-            createProgramOptions.options = info.compilerOptions;
+            const info = getConfig(options, rootNames, projectDir);
+            options = info.compilerOptions;
+            if (createOpts) {
+                createOpts.options = options;
+            }
             projectDir = info.projectDir;
         }
-        const program = originCreateProgram(createProgramOptions);
+        const program = createOpts
+            ? originCreateProgram(createOpts)
+            : originCreateProgram(rootNames, options, host, oldProgram, configFileParsingDiagnostics);
 
-        const plugins = preparePluginsFromCompilerOptions(createProgramOptions.options.plugins);
+        const plugins = preparePluginsFromCompilerOptions(options.plugins);
         const pluginCreator = new PluginCreator(plugins, projectDir);
 
         const originEmit = program.emit;
