@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.4.6"></a>
+## [1.4.6](https://github.com/cevek/ttypescript/compare/v1.4.5...v1.4.6) (2018-06-01)
+
+
+### Bug Fixes
+
+* Remove dev deps from packages ([7255e11](https://github.com/cevek/ttypescript/commit/7255e11))
+
+
+
+
 <a name="1.4.5"></a>
 ## [1.4.5](https://github.com/cevek/ttypescript/compare/v1.4.4...v1.4.5) (2018-06-01)
 
