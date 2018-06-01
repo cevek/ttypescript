@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.4.5"></a>
+## [1.4.5](https://github.com/cevek/ttypescript/compare/v1.4.4...v1.4.5) (2018-06-01)
+
+
+### Bug Fixes
+
+* Add support ts 2.9 ([1a738f7](https://github.com/cevek/ttypescript/commit/1a738f7))
+
+
+
+
 <a name="1.4.4"></a>
 ## [1.4.4](https://github.com/cevek/ttypescript/compare/v1.4.3...v1.4.4) (2018-05-31)
 
