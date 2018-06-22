@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as resolve from 'resolve';
 import * as vm from 'vm';
 import { patchCreateProgram } from './patchCreateProgram';
+import tsModule from './tsmodule';
 
 const opts = { basedir: process.cwd() };
 
@@ -31,5 +32,6 @@ const context = vm.createContext({
 
 const tss = script.runInContext(context);
 patchCreateProgram(tss, true);
+tsModule.tsModule = tss;
 
 tss.executeCommandLine(tss.sys.args);
