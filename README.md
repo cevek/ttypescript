@@ -223,6 +223,12 @@ export default function (program: ts.Program, pluginOptions: {}) {
 }
 ```
 
+If your transform needs to patch the `typescript` module, you can get access to it like this:
+```ts
+import tsModule from 'ttypescript/lib/tsmodule';
+tsModule.tsModule.nodeCanBeDecorated = () => true;
+```
+
 Examples of transformers
 
 [`{transform: "ts-transformer-keys/transformer"}`](https://github.com/kimamula/ts-transformer-keys) 
