@@ -12,7 +12,7 @@ const typescriptFilename = resolve.sync('typescript/lib/typescript', opts);
 __filename = tscFileName;
 __dirname = path.dirname(__filename);
 
-let content = fs.readFileSync(typescriptFilename, 'utf8');
+let content = fs.readFileSync(typescriptFilename, 'utf8') + '\n';
 
 content += fs
     .readFileSync(tscFileName, 'utf8')
