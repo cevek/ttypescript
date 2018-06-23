@@ -1,7 +1,7 @@
-import { PluginCreator, PluginConfig } from 'ttypescript/lib/PluginCreator';
-import { simpleTransformer } from './transforms/transform-simple';
-import { advancedTransformer } from './transforms/transform-advanced';
+import { PluginConfig, PluginCreator } from 'ttypescript/lib/PluginCreator';
 import { createTransformers } from './helpers';
+import { advancedTransformer } from './transforms/transform-advanced';
+import { simpleTransformer } from './transforms/transform-simple';
 
 describe('PluginCreator', () => {
     it('should be initialized with empty config', () => {
@@ -63,7 +63,7 @@ describe('PluginCreator', () => {
         });
     });
     it('should provide custom config', () => {
-        const config: PluginConfig[] = [{ transform: './transforms/transform-advanced.ts', some: 1, bla: 2 }];
+        const config: PluginConfig[] = [{ transform: './transforms/transform-advanced.ts', some: 1, bla: 2 } as any];
 
         expect(createTransformers(config)).toEqual({
             after: [advancedTransformer],

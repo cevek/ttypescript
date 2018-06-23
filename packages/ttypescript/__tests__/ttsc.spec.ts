@@ -1,5 +1,4 @@
-import { execSync, execFileSync, exec, ExecOptions } from 'child_process';
-import { normalize, dirname } from 'path';
+import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 
 const expectCode = `

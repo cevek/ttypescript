@@ -1,6 +1,4 @@
-import { execSync, execFileSync, exec, ExecOptions } from 'child_process';
-import { normalize, dirname } from 'path';
-import { transformers } from './transforms/transformers';
+import { execSync } from 'child_process';
 import { configs } from './configs';
 
 describe('ts-node', () => {

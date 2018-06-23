@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 export default function(program: ts.Program) {
     const checker = program.getTypeChecker();
-    return (ctx: ts.TransformationContext) => sourceFile => {
+    return (ctx: ts.TransformationContext) => (sourceFile: ts.SourceFile) => {
         function visitor(node: ts.Node): ts.Node {
             if (
                 ts.isCallExpression(node) &&

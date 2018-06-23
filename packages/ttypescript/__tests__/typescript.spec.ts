@@ -1,24 +1,17 @@
-import * as ts from 'ttypescript';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import * as ts from 'ttypescript';
 const exampleDir = path.resolve(__dirname, '..', '..', 'ttypescript-examples', 'src');
 
 describe('typescript', () => {
     it('should apply transformer from legacy config', () => {
         const content = fs.readFileSync(path.join(exampleDir, 'test.ts')).toString();
-
         const res = ts.transpileModule(content, {
             compilerOptions: {
                 plugins: [
                     {
                         customTransformers: {
-                            before: [
-                                path.join(exampleDir, 'transformers', 'transformer.ts'),
-                            ],
-                            after: [
-                                path.join(exampleDir, 'transformers', 'transformer.ts'),
-                            ],
+                            before: [__dirname + '/transforms/safely.ts'],
                         },
                     },
                 ] as any,
@@ -42,7 +35,7 @@ console.log(abc.toString());
             compilerOptions: {
                 plugins: [
                     {
-                        transform: path.join(exampleDir, 'transformers', 'transformer.ts'),
+                        transform: __dirname + '/transforms/safely.ts',
                     },
                 ] as any,
             },
