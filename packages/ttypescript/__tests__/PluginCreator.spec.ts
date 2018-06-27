@@ -2,10 +2,11 @@ import { PluginConfig, PluginCreator } from 'ttypescript/lib/PluginCreator';
 import { createTransformers } from './helpers';
 import { advancedTransformer } from './transforms/transform-advanced';
 import { simpleTransformer } from './transforms/transform-simple';
+import * as ts from 'typescript';
 
 describe('PluginCreator', () => {
     it('should be initialized with empty config', () => {
-        const pluginCreator = new PluginCreator([]);
+        const pluginCreator = new PluginCreator(ts, []);
 
         expect(pluginCreator).toBeInstanceOf(PluginCreator);
     });
@@ -17,7 +18,7 @@ describe('PluginCreator', () => {
             },
         ] as any;
 
-        expect(() => new PluginCreator(config)).toThrow();
+        expect(() => new PluginCreator(ts, config)).toThrow();
     });
 
     it('should initialize default transformer in before group', () => {

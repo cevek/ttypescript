@@ -1,5 +1,5 @@
-import * as tssl from 'typescript/lib/tsserverlibrary';
-import { patchCreateProgram } from './patchCreateProgram';
+import * as TSSL from 'typescript/lib/tsserverlibrary';
+import { loadTypeScript } from './loadTypescript';
 
-patchCreateProgram(tssl as any);
+const tssl = loadTypeScript('tsserverlibrary') as typeof TSSL;
 export = tssl;

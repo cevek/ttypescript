@@ -1,5 +1,4 @@
-import * as ts from 'typescript/lib/typescript';
-import { patchCreateProgram } from './patchCreateProgram';
+import { loadTypeScript } from './loadTypescript';
 
-patchCreateProgram(ts);
+const ts = loadTypeScript('typescript');
 export = ts;

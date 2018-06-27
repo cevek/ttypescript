@@ -2,8 +2,6 @@ import { dirname } from 'path';
 import * as ts from 'typescript';
 import { PluginConfig, PluginCreator } from './PluginCreator';
 
-export type BaseHost = Pick<typeof ts, 'createProgram' | 'versionMajorMinor'>;
-
 declare module 'typescript' {
     interface CreateProgramOptions {
         rootNames: ReadonlyArray<string>;
@@ -21,11 +19,7 @@ declare module 'typescript' {
     }
 }
 
-export function patchCreateProgram<Host extends BaseHost>(
-    tsm: Host,
-    forceReadConfig = false,
-    projectDir = process.cwd()
-): Host {
+export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, projectDir = process.cwd()) {
     const originCreateProgram = tsm.createProgram as any;
 
     function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
@@ -72,7 +66,7 @@ export function patchCreateProgram<Host extends BaseHost>(
             : originCreateProgram(rootNames, options, host, oldProgram, configFileParsingDiagnostics);
 
         const plugins = preparePluginsFromCompilerOptions(options.plugins);
-        const pluginCreator = new PluginCreator(plugins, projectDir);
+        const pluginCreator = new PluginCreator(tsm, plugins, projectDir);
 
         const originEmit = program.emit;
         program.emit = function newEmit(
@@ -97,7 +91,7 @@ function getConfig(compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyA
         const tsconfigPath = ts.findConfigFile(dir, ts.sys.fileExists);
         if (tsconfigPath) {
             const projectDir = dirname(tsconfigPath);
-            const config = readConfig(tsconfigPath, dirname(tsconfigPath), ts);
+            const config = readConfig(tsconfigPath, dirname(tsconfigPath));
             compilerOptions = { ...config.options, ...compilerOptions };
             return {
                 projectDir,
@@ -111,12 +105,12 @@ function getConfig(compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyA
     };
 }
 
-function readConfig(configFileNamePath: string, projectDir: string, tsm: typeof ts) {
-    const result = tsm.readConfigFile(configFileNamePath, tsm.sys.readFile);
+function readConfig(configFileNamePath: string, projectDir: string) {
+    const result = ts.readConfigFile(configFileNamePath, ts.sys.readFile);
     if (result.error) {
         throw new Error('tsconfig.json error: ' + result.error.messageText);
     }
-    return tsm.parseJsonConfigFileContent(result.config, tsm.sys, projectDir, undefined, configFileNamePath);
+    return ts.parseJsonConfigFileContent(result.config, ts.sys, projectDir, undefined, configFileNamePath);
 }
 
 function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {

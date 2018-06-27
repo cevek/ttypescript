@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
 import { inspect } from 'util';
@@ -37,15 +36,15 @@ export interface TransformerBasePlugin {
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 
-export type LSPattern = (ls: ts.LanguageService, config?: {}) => TransformerPlugin;
-export type ProgramPattern = (program: ts.Program, config?: {}) => TransformerPlugin;
-export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config?: {}) => TransformerPlugin;
+export type LSPattern = (ls: ts.LanguageService, config: {}) => TransformerPlugin;
+export type ProgramPattern = (program: ts.Program, config: {}, helpers?: { ts: typeof ts }) => TransformerPlugin;
+export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config: {}) => TransformerPlugin;
 export type ConfigPattern = (config: {}) => TransformerPlugin;
-export type TypeCheckerPattern = (checker: ts.TypeChecker, config?: {}) => TransformerPlugin;
+export type TypeCheckerPattern = (checker: ts.TypeChecker, config: {}) => TransformerPlugin;
 export type RawPattern = (
     context: ts.TransformationContext,
-    program?: ts.Program,
-    config?: {}
+    program: ts.Program,
+    config: {}
 ) => ts.Transformer<ts.SourceFile>;
 export type PluginFactory =
     | LSPattern
@@ -56,19 +55,19 @@ export type PluginFactory =
     | RawPattern;
 
 function createTransformerFromPattern({
+    typescript,
     factory,
     config,
     program,
     ls,
 }: {
+    typescript: typeof ts;
     factory: PluginFactory;
     config: PluginConfig;
     program: ts.Program;
     ls?: ts.LanguageService;
 }): TransformerBasePlugin {
     const { transform, after, afterDeclarations, name, type, ...cleanConfig } = config;
-    // just to check for future prop addition to PluginConfig
-    const temp: PluginConfig = { transform, after, afterDeclarations, name, type };
     if (!transform) throw new Error('Not a valid config entry: "transform" key not found');
     let ret: TransformerPlugin;
     switch (config.type) {
@@ -87,7 +86,7 @@ function createTransformerFromPattern({
             break;
         case undefined:
         case 'program':
-            ret = (factory as ProgramPattern)(program, cleanConfig);
+            ret = (factory as ProgramPattern)(program, cleanConfig, { ts: typescript });
             break;
         case 'raw':
             ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program, cleanConfig);
@@ -97,8 +96,9 @@ function createTransformerFromPattern({
     }
     if (typeof ret === 'function') {
         if (after) return { after: ret };
-        else if (afterDeclarations) return { afterDeclarations: ret as ts.TransformerFactory<ts.SourceFile | ts.Bundle> };
-        else return { before: ret };
+        else if (afterDeclarations) {
+            return { afterDeclarations: ret as ts.TransformerFactory<ts.SourceFile | ts.Bundle> };
+        } else return { before: ret };
     }
     return ret;
 }
@@ -120,7 +120,7 @@ const requireStack: string[] = [];
  * ]).createTransformers({ program })
  */
 export class PluginCreator {
-    constructor(private configs: PluginConfig[], private resolveBaseDir: string = process.cwd()) {
+    constructor(private typescript: typeof ts, private configs: PluginConfig[], private resolveBaseDir: string = process.cwd()) {
         this.validateConfigs(configs);
     }
 
@@ -150,6 +150,7 @@ export class PluginCreator {
             // if recursion
             if (factory === undefined) continue;
             const transformer = createTransformerFromPattern({
+                typescript: this.typescript,
                 factory,
                 config,
                 program,
@@ -173,7 +174,9 @@ export class PluginCreator {
         if (
             !tsNodeIncluded &&
             transform.match(/\.ts$/) &&
-            (module.parent!.parent === null || module.parent!.parent!.parent === null || module.parent!.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
+            (module.parent!.parent === null ||
+                module.parent!.parent!.parent === null ||
+                module.parent!.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
         ) {
             require('ts-node').register({
                 transpileOnly: true,
@@ -181,7 +184,7 @@ export class PluginCreator {
                 compilerOptions: {
                     target: 'es5',
                     module: 'commonjs',
-                }
+                },
             });
             tsNodeIncluded = true;
         }
@@ -206,23 +209,10 @@ export class PluginCreator {
     }
 
     private validateConfigs(configs: PluginConfig[]) {
-        // const pluginObj: PluginConfig = {
-        //     name: '',
-        //     transform: '',
-        //     type: 'ls',
-        //     after: true,
-        //     afterDeclarations: true,
-        // };
-        // const possibleKeys = Object.keys(pluginObj);
         for (const config of configs) {
             if (!config.name && !config.transform) {
                 throw new Error('tsconfig.json plugins error: transform must be present');
             }
-            // for (const key in config) {
-            //     if (possibleKeys.indexOf(key) === -1) {
-            //         throw new Error('tsconfig.json plugins error: Unexpected property in plugins: ' + key);
-            //     }
-            // }
         }
     }
 }

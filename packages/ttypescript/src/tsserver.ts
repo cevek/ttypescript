@@ -1,6 +1,3 @@
-// @ts-ignore
-import * as tsServer from 'typescript/lib/tsserver';
-import { patchCreateProgram } from './patchCreateProgram';
-
-patchCreateProgram(tsServer);
+import { loadTypeScript } from './loadTypescript';
+const tsServer = loadTypeScript('tsserver');
 export = tsServer;

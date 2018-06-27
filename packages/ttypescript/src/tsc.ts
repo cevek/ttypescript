@@ -1,23 +1,16 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as resolve from 'resolve';
-import { patchCreateProgram } from './patchCreateProgram';
+import { loadTypeScript } from './loadTypescript';
+import { dirname } from 'path';
 
-const opts = { basedir: process.cwd() };
-
-const tscFileName = resolve.sync('typescript/lib/tsc', opts);
-const typescriptFilename = resolve.sync('typescript/lib/typescript', opts);
-
-__filename = tscFileName;
-__dirname = path.dirname(__filename);
-
+const ts = loadTypeScript('typescript', { folder: process.cwd(), forceConfigLoad: true });
+const tscFileName = resolve.sync('typescript/lib/tsc', { basedir: process.cwd() });
 const commandLineTsCode = fs
     .readFileSync(tscFileName, 'utf8')
     .replace(/^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, '$1')
-    .replace('ts.executeCommandLine(ts.sys.args);', 'module.exports = ts;');
+    .replace('ts.executeCommandLine(ts.sys.args);', '');
 
-
-const ts = require(typescriptFilename);
-patchCreateProgram(ts, true);
+__filename = tscFileName;
+__dirname = dirname(__filename);
 eval(commandLineTsCode);
-ts.executeCommandLine(ts.sys.args);
+(ts as any).executeCommandLine(ts.sys.args);

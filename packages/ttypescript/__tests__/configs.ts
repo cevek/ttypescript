@@ -2,5 +2,6 @@ import { normalize } from "path";
 
 export const configs = {
     tsNodePath: normalize(__dirname + '/../../../node_modules/ts-node/dist/bin.js'),
-    typescriptFromLibPath: normalize(__dirname + '/../lib/typescript.js')
+    typescriptFromLibPath: normalize(__dirname + '/../lib/typescript.js'),
+    tscFromLibPath: normalize(__dirname + '/../lib/tsc.js')
 }
