@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/cevek/ttypescript/compare/v1.4.6...v1.5.0) (2018-07-30)
+
+
+### Bug Fixes
+
+* Add support latest dev ts 3.0 ([810cab7](https://github.com/cevek/ttypescript/commit/810cab7))
+* Create own test tsconfig.json ([6cd1c05](https://github.com/cevek/ttypescript/commit/6cd1c05))
+* Refactor tsc ([abbdc86](https://github.com/cevek/ttypescript/commit/abbdc86))
+* require typescript in tsc ([9a001db](https://github.com/cevek/ttypescript/commit/9a001db))
+
+
+### Features
+
+* Make copy of typescript instead of patch it ([f69752a](https://github.com/cevek/ttypescript/commit/f69752a))
+
+
+
+
 <a name="1.4.6"></a>
 ## [1.4.6](https://github.com/cevek/ttypescript/compare/v1.4.5...v1.4.6) (2018-06-01)
 
