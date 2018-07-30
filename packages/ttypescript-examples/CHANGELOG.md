@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.5.2"></a>
+## [1.5.2](https://github.com/cevek/ttypescript/compare/v1.5.1...v1.5.2) (2018-07-30)
+
+
+
+
+**Note:** Version bump only for package ttypescript-examples
+
 <a name="1.5.1"></a>
 ## [1.5.1](https://github.com/cevek/ttypescript/compare/v1.5.0...v1.5.1) (2018-07-30)
 
