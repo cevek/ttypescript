@@ -6,6 +6,7 @@ module.exports = {
     "^ttypescript-(.*?)$": "<rootDir>/packages/ttypescript-$1/src"
   },
   rootDir: __dirname,
+  testURL: 'http://localhost',
   testMatch: [
     "<rootDir>/packages/*/__tests__/**/*spec.@(js|ts)?(x)",
   ],
