@@ -31,6 +31,6 @@
   "dependencies": {
     "resolve": "^1.7.1",
     "ts-node": "^6.0.2",
-    "typescript": ">=2.7.0"
+    "typescript": "*"
   }
 }

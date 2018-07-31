@@ -37,6 +37,6 @@
     "ts-transform-react-intl": "^0.2.2",
     "ts-transformer-enumerate": "^0.3.0",
     "ts-transformer-keys": "^0.3.1",
-    "typescript": "^3.0.0-dev.20180626"
+    "typescript": "^3.1.0-dev.20180728"
   }
 }
