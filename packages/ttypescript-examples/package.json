@@ -1,6 +1,6 @@
 {
   "name": "ttypescript-examples",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "TTypescript examples",
   "scripts": {
     "build": "cd src && ts-node -C ttypescript test.ts",
