@@ -4,7 +4,7 @@ export interface MyPluginOptions {
     some?: string
 }
 
-export default function myTransformerPlugin(program: ts.Program, opts?: MyPluginOptions) {
+export default function myTransformerPlugin(program: ts.Program, opts: MyPluginOptions) {
     return {
         before(ctx: ts.TransformationContext) {
             return (sourceFile: ts.SourceFile) => {

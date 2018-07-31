@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as resolve from 'resolve';
 import * as TS from 'typescript';
-import { runInNewContext } from 'vm';
 import { patchCreateProgram } from './patchCreateProgram';
 import { dirname } from 'path';
 
@@ -18,6 +17,10 @@ export function loadTypeScript(
     __dirname = dirname(__filename);
     eval(code);
     const ts = module.exports;
+    const [major, minor] = ts.versionMajorMinor.split('.');
+    if (+major < 3 && +minor < 7) {
+        throw new Error('ttypescript supports typescript from 2.7 version');
+    }
     patchCreateProgram(ts, forceConfigLoad);
     return ts;
 }
