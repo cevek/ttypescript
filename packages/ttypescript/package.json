@@ -30,7 +30,6 @@
   "license": "MIT",
   "dependencies": {
     "resolve": "^1.7.1",
-    "ts-node": "^6.0.2",
-    "typescript": "*"
+    "ts-node": "^6.0.2"
   }
 }
