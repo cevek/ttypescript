@@ -1,4 +1,4 @@
 import { loadTypeScript } from './loadTypescript';
 
-const ts = loadTypeScript('typescript');
-export = ts;
+const TS = loadTypeScript('typescript');
+export = TS;
