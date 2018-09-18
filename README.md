@@ -225,6 +225,8 @@ export default function (program: ts.Program, pluginOptions: {}) {
 
 Examples of transformers
 
+[`{transform: "typescript-is/lib/transform-inline/transformer"}`](https://github.com/woutervh-/typescript-is) 
+
 [`{transform: "ts-transformer-keys/transformer"}`](https://github.com/kimamula/ts-transformer-keys) 
 
 [`{transform: "ts-transformer-enumerate/transformer"}`](https://github.com/kimamula/ts-transformer-enumerate)
