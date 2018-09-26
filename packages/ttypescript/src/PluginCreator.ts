@@ -33,6 +33,7 @@ export interface TransformerBasePlugin {
     after?: ts.TransformerFactory<ts.SourceFile>;
     afterDeclarations?: ts.TransformerFactory<ts.SourceFile | ts.Bundle>;
 }
+export type TransformerList = Required<ts.CustomTransformers>
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 
@@ -124,29 +125,22 @@ export class PluginCreator {
         this.validateConfigs(configs);
     }
 
-    mergeTransformers(into: ts.CustomTransformers, source: ts.CustomTransformers | TransformerBasePlugin) {
+    mergeTransformers(into: TransformerList, source: ts.CustomTransformers | TransformerBasePlugin) {
         const slice = <T>(input: T | T[]) => Array.isArray(input) ? input.slice() : [input]
         if (source.before) {
-            if (into.before) into.before.push(...slice(source.before));
-            else into.before = slice(source.before);
+            into.before.push(...slice(source.before));
         }
         if (source.after) {
-            if (into.after) into.after.push(...slice(source.after));
-            else into.after = slice(source.after);
+            into.after.push(...slice(source.after));
         }
         if (source.afterDeclarations) {
-            if (into.afterDeclarations) into.afterDeclarations.push(...slice(source.afterDeclarations));
-            else into.afterDeclarations = slice(source.afterDeclarations);
+            into.afterDeclarations.push(...slice(source.afterDeclarations));
         }
         return this
     }
 
     createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }, customTransformers?: ts.CustomTransformers) {
-        const chain: {
-            before: ts.TransformerFactory<ts.SourceFile>[];
-            after: ts.TransformerFactory<ts.SourceFile>[];
-            afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[];
-        } = {
+        const chain: TransformerList = {
             before: [],
             after: [],
             afterDeclarations: [],
