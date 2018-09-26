@@ -51,6 +51,34 @@ console.log(abc.toString());
         expect(res.outputText).toEqual(result);
     });
 
+    it('should merge transformers', () => {
+        const content = fs.readFileSync(path.join(exampleDir, 'test.ts')).toString();
+        const customTransformer = jest.fn(sf => sf)
+
+        const res = ts.transpileModule(content, {
+            compilerOptions: {
+                plugins: [
+                    {
+                        transform: __dirname + '/transforms/safely.ts',
+                    },
+                ] as any,
+            },
+            transformers: {
+                before: [() => customTransformer]
+            },
+        });
+
+        const result = `var a = { b: 1 };
+function abc() {
+    var c = a && a.b;
+}
+console.log(abc.toString());
+`;
+
+        expect(res.outputText).toEqual(result);
+        expect(customTransformer).toHaveBeenCalled()
+    });
+
     it('should run 3rd party transformers', () => {
         const res = ts.transpileModule('var x = 1;', {
             compilerOptions: {
