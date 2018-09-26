@@ -124,7 +124,24 @@ export class PluginCreator {
         this.validateConfigs(configs);
     }
 
-    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
+    mergeTransformers(into: ts.CustomTransformers, source: ts.CustomTransformers | TransformerBasePlugin) {
+        const slice = <T>(input: T | T[]) => Array.isArray(input) ? input.slice() : [input]
+        if (source.before) {
+            if (into.before) into.before.push(...slice(source.before));
+            else into.before = slice(source.before);
+        }
+        if (source.after) {
+            if (into.after) into.after.push(...slice(source.after));
+            else into.after = slice(source.after);
+        }
+        if (source.afterDeclarations) {
+            if (into.afterDeclarations) into.afterDeclarations.push(...slice(source.afterDeclarations));
+            else into.afterDeclarations = slice(source.afterDeclarations);
+        }
+        return this
+    }
+
+    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }, customTransformers?: ts.CustomTransformers) {
         const chain: {
             before: ts.TransformerFactory<ts.SourceFile>[];
             after: ts.TransformerFactory<ts.SourceFile>[];
@@ -156,15 +173,12 @@ export class PluginCreator {
                 program,
                 ls,
             });
-            if (transformer.before) {
-                chain.before.push(transformer.before);
-            }
-            if (transformer.after) {
-                chain.after.push(transformer.after);
-            }
-            if (transformer.afterDeclarations) {
-                chain.afterDeclarations.push(transformer.afterDeclarations);
-            }
+            this.mergeTransformers(chain, transformer)
+        }
+
+        // if we're given some custom transformers, they must be chained at the end
+        if (customTransformers) {
+            this.mergeTransformers(chain, customTransformers)
         }
 
         return chain;
