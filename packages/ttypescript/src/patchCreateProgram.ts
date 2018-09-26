@@ -74,9 +74,10 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
             writeFile?: ts.WriteFileCallback,
             cancellationToken?: ts.CancellationToken,
             emitOnlyDtsFiles?: boolean,
-            customTransformers: ts.CustomTransformers = pluginCreator.createTransformers({ program })
+            customTransformers?: ts.CustomTransformers
         ): ts.EmitResult {
-            return originEmit(targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, customTransformers);
+            const mergedTransformers = pluginCreator.createTransformers({ program }, customTransformers)
+            return originEmit(targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, mergedTransformers);
         };
 
         return program;

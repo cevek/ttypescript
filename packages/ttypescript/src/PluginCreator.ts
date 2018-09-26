@@ -33,6 +33,7 @@ export interface TransformerBasePlugin {
     after?: ts.TransformerFactory<ts.SourceFile>;
     afterDeclarations?: ts.TransformerFactory<ts.SourceFile | ts.Bundle>;
 }
+export type TransformerList = Required<ts.CustomTransformers>
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 
@@ -124,12 +125,22 @@ export class PluginCreator {
         this.validateConfigs(configs);
     }
 
-    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }) {
-        const chain: {
-            before: ts.TransformerFactory<ts.SourceFile>[];
-            after: ts.TransformerFactory<ts.SourceFile>[];
-            afterDeclarations: ts.TransformerFactory<ts.SourceFile | ts.Bundle>[];
-        } = {
+    mergeTransformers(into: TransformerList, source: ts.CustomTransformers | TransformerBasePlugin) {
+        const slice = <T>(input: T | T[]) => Array.isArray(input) ? input.slice() : [input]
+        if (source.before) {
+            into.before.push(...slice(source.before));
+        }
+        if (source.after) {
+            into.after.push(...slice(source.after));
+        }
+        if (source.afterDeclarations) {
+            into.afterDeclarations.push(...slice(source.afterDeclarations));
+        }
+        return this
+    }
+
+    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }, customTransformers?: ts.CustomTransformers) {
+        const chain: TransformerList = {
             before: [],
             after: [],
             afterDeclarations: [],
@@ -156,15 +167,12 @@ export class PluginCreator {
                 program,
                 ls,
             });
-            if (transformer.before) {
-                chain.before.push(transformer.before);
-            }
-            if (transformer.after) {
-                chain.after.push(transformer.after);
-            }
-            if (transformer.afterDeclarations) {
-                chain.afterDeclarations.push(transformer.afterDeclarations);
-            }
+            this.mergeTransformers(chain, transformer)
+        }
+
+        // if we're given some custom transformers, they must be chained at the end
+        if (customTransformers) {
+            this.mergeTransformers(chain, customTransformers)
         }
 
         return chain;
