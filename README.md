@@ -137,8 +137,6 @@ Plugin config entry: `{ "transform": "transformer-module", type: "raw" }`.
 ```
 Plugin config entry: `{ "transform": "transformer-module", type: "compilerOptions" }`.
 
-Don't forget to exclude your transformers in the tsconfig.json
-
 ```json
 {
     "compilerOptions": {
@@ -150,7 +148,6 @@ Don't forget to exclude your transformers in the tsconfig.json
             { "transform": "transformer-module", "type": "ls" }
         ]
     },
-    "exclude": ["node_modules", "transformers/**/*"]
 }
 ```
 
