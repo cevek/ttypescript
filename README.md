@@ -245,6 +245,9 @@ Examples of transformers
 
 [`{transform: "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
 
+[`{transform: "typescript-transform-jsx", type: "raw"}`](https://github.com/LeDDGroup/typescript-transform-jsx) 
+
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 
