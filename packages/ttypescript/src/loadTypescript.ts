@@ -12,11 +12,13 @@ export function loadTypeScript(
     const opts = { basedir: folder };
     const typescriptFilename = resolve.sync('typescript/lib/' + filename, opts);
 
+    const module = { exports: ts }
     const code = fs.readFileSync(typescriptFilename, 'utf8');
     runInThisContext(
         `(function (exports, require, module, __filename, __dirname, ts) {${code}\n});`,
         { filename: typescriptFilename, lineOffset: 0, displayErrors: true }
-    ).call(ts, ts, require, { exports: ts }, typescriptFilename, dirname(typescriptFilename), ts);
+    ).call(ts, ts, require, module, typescriptFilename, dirname(typescriptFilename), ts);
+    ts = module.exports
 
     const [major, minor] = ts.versionMajorMinor.split('.');
     if (+major < 3 && +minor < 7) {
