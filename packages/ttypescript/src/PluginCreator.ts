@@ -205,9 +205,18 @@ export class PluginCreator {
         //   so this stack checks that if we already required this file we are in the reqursion
         if (requireStack.indexOf(modulePath) > -1) return;
         requireStack.push(modulePath);
-        const factoryModule: PluginFactory | { default: PluginFactory } = require(modulePath);
+        const factoryModule: PluginFactory | { default: PluginFactory } | { transform: PluginFactory } = require(modulePath);
         requireStack.pop();
-        const factory = 'default' in factoryModule ? factoryModule.default : factoryModule;
+
+        let factory: PluginFactory
+        if ('default' in factoryModule) {
+            factory = factoryModule.default
+        } else if ('transform' in factoryModule && typeof factoryModule === 'object') {
+            factory = factoryModule.transform
+        } else {
+            factory = factoryModule
+        }
+
         if (typeof factory !== 'function') {
             throw new Error(
                 `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + inspect(factoryModule)

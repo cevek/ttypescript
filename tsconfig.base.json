@@ -4,6 +4,7 @@
         "declaration": true,
         "module": "commonjs",
         "strict": true,
+        "skipLibCheck": true,
         "baseUrl": "packages",
         "paths": {
             "ttypescript/lib/*": ["ttypescript/src/*"],

@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
+        "skipLibCheck": true,
         "plugins": [{ "transform": "../transforms/before.ts" }]
     }
 }

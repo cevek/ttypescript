@@ -12,6 +12,7 @@ console.log(x);
 describe('ttsc', () => {
     it('should transform code', () => {
         execSync('node ' + configs.tscFromLibPath, {
+            stdio:'inherit',
             cwd: __dirname + '/assets/',
             maxBuffer: 1e8,
         });
