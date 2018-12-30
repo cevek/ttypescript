@@ -227,6 +227,20 @@ export default function(program: ts.Program, pluginOptions: {}) {
 
 ```
 
+Is possible to use commonjs `export =`, `export default` and named export `export transform`.
+
+```ts
+export = function (program: ts.Program, pluginOptions: {})
+```
+
+```ts
+export default function(program: ts.Program, pluginOptions: {})
+```
+
+```ts
+export function transform(program: ts.Program, pluginOptions: {})
+```
+
 Examples of transformers
 
 [`{transform: "typescript-is/lib/transform-inline/transformer"}`](https://github.com/woutervh-/typescript-is) 

@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
-        "skipLibCheck": true,
+        "lib": ["es2015"],
         "plugins": [{ "transform": "../transforms/before.ts" }]
     }
 }
