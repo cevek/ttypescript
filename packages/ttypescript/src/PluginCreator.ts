@@ -13,6 +13,11 @@ export interface PluginConfig {
     transform?: string;
 
     /**
+     * The optional name of the exported transform plugin in the transform module.
+     */
+    import?: string;
+
+    /**
      * Plugin entry point format type, default is program
      */
     type?: 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
@@ -157,7 +162,7 @@ export class PluginCreator {
             if (!config.transform) {
                 continue;
             }
-            const factory = this.resolveFactory(config.transform);
+            const factory = this.resolveFactory(config.transform, config.import);
             // if recursion
             if (factory === undefined) continue;
             const transformer = createTransformerFromPattern({
@@ -178,7 +183,7 @@ export class PluginCreator {
         return chain;
     }
 
-    private resolveFactory(transform: string): PluginFactory | undefined {
+    private resolveFactory(transform: string, importKey?: string): PluginFactory | undefined {
         if (
             !tsNodeIncluded &&
             transform.match(/\.ts$/) &&
@@ -204,14 +209,31 @@ export class PluginCreator {
         //   this happens cause ts-node uses to compile transformers the same config included this transformer
         //   so this stack checks that if we already required this file we are in the reqursion
         if (requireStack.indexOf(modulePath) > -1) return;
+
         requireStack.push(modulePath);
-        const factoryModule: PluginFactory | { default: PluginFactory } = require(modulePath);
+        const factoryModule = require(modulePath);
         requireStack.pop();
-        const factory = 'default' in factoryModule ? factoryModule.default : factoryModule;
-        if (typeof factory !== 'function') {
-            throw new Error(
-                `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + inspect(factoryModule)
-            );
+
+        let factory: PluginFactory
+        if (importKey) {
+            if (!(importKey in factoryModule)) {
+                throw new Error(
+                    `tsconfig.json > plugins: "${transform}" does not have an export named "${importKey}": ` + inspect(factoryModule)
+                );
+            }
+            factory = factoryModule[importKey]
+            if (typeof factory !== 'function') {
+                throw new Error(
+                    `tsconfig.json > plugins: "${transform}" named export "${importKey}" is a "${typeof factory}" and not a plugin: ` + inspect(factoryModule)
+                );
+            }
+        } else {
+            factory = 'default' in factoryModule ? factoryModule.default : factoryModule
+            if (typeof factory !== 'function') {
+                throw new Error(
+                    `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + inspect(factoryModule)
+                );
+            }
         }
         return factory;
     }

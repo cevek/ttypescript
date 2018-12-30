@@ -56,6 +56,11 @@ export interface PluginConfig {
     transform?: string;
 
     /**
+     * The optional name of the exported transform plugin in the transform module.
+     */
+    import?: string;
+
+    /**
      * Plugin entry point format type, default is program
      */
     type?: 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
@@ -76,7 +81,7 @@ export interface PluginConfig {
 }
 ```
 
-You just need to add the `transform` block with optional `type`, `after`, `afterDeclarations` and plugin-related options.
+You just need to add the `transform` block with optional `import`, `type`, `after`, `afterDeclarations` and plugin-related options.
 
 `transform` can accept npm module or local file path (.ts or .js) related to `tsconfig.json`
 
@@ -241,7 +246,7 @@ Examples of transformers
 
 [`{transform: "ts-transform-css-modules/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
 
-[`{transform: "ts-transform-react-intl/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
+[`{transform: "ts-transform-react-intl/dist/transform", import: "transform", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
 
 [`{transform: "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
 
