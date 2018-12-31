@@ -226,7 +226,7 @@ export class PluginCreator {
 
         if (typeof factory !== 'function') {
             throw new Error(
-                `tsconfig.json > plugins: "${transform}" export "${importKey}" is a plugin: "${inspect(factory)}"`
+                `tsconfig.json > plugins: "${transform}" export "${importKey}" is not a plugin: "${inspect(factory)}"`
             );
         }
 
