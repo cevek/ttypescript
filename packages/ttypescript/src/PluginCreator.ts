@@ -183,7 +183,7 @@ export class PluginCreator {
         return chain;
     }
 
-    private resolveFactory(transform: string, importKey?: string): PluginFactory | undefined {
+    private resolveFactory(transform: string, importKey: string = 'default'): PluginFactory | undefined {
         if (
             !tsNodeIncluded &&
             transform.match(/\.ts$/) &&
@@ -211,30 +211,25 @@ export class PluginCreator {
         if (requireStack.indexOf(modulePath) > -1) return;
 
         requireStack.push(modulePath);
-        const factoryModule = require(modulePath);
+        const commonjsModule:PluginFactory | { [key: string]: PluginFactory } = require(modulePath);
         requireStack.pop();
 
-        let factory: PluginFactory
-        if (importKey) {
-            if (!(importKey in factoryModule)) {
-                throw new Error(
-                    `tsconfig.json > plugins: "${transform}" does not have an export named "${importKey}": ` + inspect(factoryModule)
-                );
-            }
-            factory = factoryModule[importKey]
-            if (typeof factory !== 'function') {
-                throw new Error(
-                    `tsconfig.json > plugins: "${transform}" named export "${importKey}" is a "${typeof factory}" and not a plugin: ` + inspect(factoryModule)
-                );
-            }
-        } else {
-            factory = 'default' in factoryModule ? factoryModule.default : factoryModule
-            if (typeof factory !== 'function') {
-                throw new Error(
-                    `tsconfig.json > plugins: "${transform}" is not a plugin module: ` + inspect(factoryModule)
-                );
-            }
+        const factoryModule = typeof commonjsModule === 'function' ? { default: commonjsModule } : commonjsModule;
+
+        const factory = factoryModule[importKey];
+        if (!factory) {
+            throw new Error(
+                `tsconfig.json > plugins: "${transform}" does not have an export "${importKey}": ` +
+                    inspect(factoryModule)
+            );
         }
+
+        if (typeof factory !== 'function') {
+            throw new Error(
+                `tsconfig.json > plugins: "${transform}" export "${importKey}" is a plugin: "${inspect(factory)}"`
+            );
+        }
+
         return factory;
     }
 
