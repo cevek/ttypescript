@@ -211,7 +211,7 @@ export class PluginCreator {
         if (requireStack.indexOf(modulePath) > -1) return;
 
         requireStack.push(modulePath);
-        const commonjsModule:PluginFactory | { [key: string]: PluginFactory } = require(modulePath);
+        const commonjsModule: PluginFactory | { [key: string]: PluginFactory } = require(modulePath);
         requireStack.pop();
 
         const factoryModule = typeof commonjsModule === 'function' ? { default: commonjsModule } : commonjsModule;
