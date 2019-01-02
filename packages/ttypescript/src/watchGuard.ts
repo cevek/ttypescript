@@ -1,3 +1,1 @@
-// @ts-ignore
-import * as wg from 'typescript/lib/watchGuard';
-export = wg;
+module.exports = require('typescript/lib/watchGuard');
