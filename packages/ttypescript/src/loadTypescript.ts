@@ -1,18 +1,20 @@
 import * as fs from 'fs';
 import * as resolve from 'resolve';
 import * as TS from 'typescript';
+type ts = typeof TS;
 import { patchCreateProgram } from './patchCreateProgram';
 import { dirname } from 'path';
 import { runInThisContext } from 'vm'
 
+
 export function loadTypeScript(
     filename: string,
     { folder = __dirname, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
-): typeof TS {
+): ts {
     const opts = { basedir: folder };
     const typescriptFilename = resolve.sync('typescript/lib/' + filename, opts);
 
-    const m = { exports: {} as typeof TS }
+    const m = { exports: {} as ts }
     const code = fs.readFileSync(typescriptFilename, 'utf8');
     runInThisContext(
         `(function (exports, require, module, __filename, __dirname) {${code}\n});`,

@@ -1,3 +1,1 @@
-import { loadTypeScript } from './loadTypescript';
-const tsServer = loadTypeScript('tsserver');
-export = tsServer;
+module.exports = require('typescript/lib/tsserver');

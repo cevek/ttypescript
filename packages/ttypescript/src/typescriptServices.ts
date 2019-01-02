@@ -1,3 +1,4 @@
+import * as TS from 'typescript';
 import { loadTypeScript } from './loadTypescript';
-const TS = loadTypeScript('typescriptServices');
-export = TS;
+
+export = loadTypeScript('typescriptServices');
