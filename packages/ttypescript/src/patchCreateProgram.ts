@@ -54,7 +54,7 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
         }
 
         if (forceReadConfig) {
-            const info = getConfig(options, rootNames, projectDir);
+            const info = getConfig(tsm, options, rootNames, projectDir);
             options = info.compilerOptions;
             if (createOpts) {
                 createOpts.options = options;
@@ -86,13 +86,13 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
     return tsm;
 }
 
-function getConfig(compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyArray<string>, defaultDir: string) {
+function getConfig(tsm: typeof ts, compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyArray<string>, defaultDir: string) {
     if (compilerOptions.configFilePath === undefined) {
         const dir = rootFileNames.length > 0 ? dirname(rootFileNames[0]) : defaultDir;
-        const tsconfigPath = ts.findConfigFile(dir, ts.sys.fileExists);
+        const tsconfigPath = tsm.findConfigFile(dir, tsm.sys.fileExists);
         if (tsconfigPath) {
             const projectDir = dirname(tsconfigPath);
-            const config = readConfig(tsconfigPath, dirname(tsconfigPath));
+            const config = readConfig(tsm, tsconfigPath, dirname(tsconfigPath));
             compilerOptions = { ...config.options, ...compilerOptions };
             return {
                 projectDir,
@@ -106,12 +106,12 @@ function getConfig(compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyA
     };
 }
 
-function readConfig(configFileNamePath: string, projectDir: string) {
-    const result = ts.readConfigFile(configFileNamePath, ts.sys.readFile);
+function readConfig(tsm: typeof ts, configFileNamePath: string, projectDir: string) {
+    const result = tsm.readConfigFile(configFileNamePath, tsm.sys.readFile);
     if (result.error) {
         throw new Error('tsconfig.json error: ' + result.error.messageText);
     }
-    return ts.parseJsonConfigFileContent(result.config, ts.sys, projectDir, undefined, configFileNamePath);
+    return tsm.parseJsonConfigFileContent(result.config, tsm.sys, projectDir, undefined, configFileNamePath);
 }
 
 function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
