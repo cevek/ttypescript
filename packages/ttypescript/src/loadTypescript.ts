@@ -1,30 +1,83 @@
-import * as fs from 'fs';
-import * as resolve from 'resolve';
 import * as TS from 'typescript';
+import { readFileSync } from 'fs';
+import { sync as resolveSync } from 'resolve';
 import { patchCreateProgram } from './patchCreateProgram';
-import { dirname } from 'path';
+import { join, dirname } from 'path';
 import { runInThisContext } from 'vm'
+import Module = require('module')
+
+export function resolveTypeScriptModule(filename: string, folder: string = __dirname): string {
+    return resolveSync('typescript/lib/' + filename, { basedir: folder });
+}
+
+export class TypeScriptModuleLoader {
+    public readonly filename: string;
+    public readonly loadToModule: (m: Module, ts?: typeof TS) => any;
+
+    public constructor(filename: string, code: string) {
+        this.filename = filename;
+        
+        const loader = runInThisContext(
+            `(function (exports, require, module, __filename, __dirname, ts) {${code}\n});`,
+            { filename, lineOffset: 0, displayErrors: true }
+        );
+
+        this.loadToModule = (m: Module, ts?: typeof TS) => {
+            loader.call(m.exports, m.exports, require, this, m.filename, dirname(m.filename), ts || m.exports);
+            return m.exports
+        };
+    }
+}
+
+export class TypeScriptModule extends Module {
+    public constructor(filename: string) {
+        super(filename, module)
+        this.filename = filename;
+        this.loaded = true;
+        this.paths = module.paths.slice();
+    }
+}
+
+class LazyTypeScriptModule extends TypeScriptModule {
+    public constructor(filename: string, loader: TypeScriptModuleLoader) {
+        super(filename)
+        const exports = this.exports
+        Object.defineProperty(this, 'exports', {
+            get: () => {
+                this.exports = exports
+                loader.loadToModule(this)
+                return this.exports
+            },
+            set: (value: typeof TS) => Object.defineProperty(this, 'exports', { value, enumerable: true, configurable: true, writable: true }),
+            enumerable: true,
+            configurable: true
+        });
+    }
+}
 
 export function loadTypeScript(
     filename: string,
-    { folder = __dirname, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
+    { folder = undefined, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
 ): typeof TS {
-    const opts = { basedir: folder };
-    const typescriptFilename = resolve.sync('typescript/lib/' + filename, opts);
+    const libFilename = resolveTypeScriptModule(filename, folder);
 
-    const m = { exports: {} as typeof TS }
-    const code = fs.readFileSync(typescriptFilename, 'utf8');
-    runInThisContext(
-        `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
-        { filename: typescriptFilename, lineOffset: 0, displayErrors: true }
-    ).call(m.exports, m.exports, require, m, typescriptFilename, dirname(typescriptFilename));
-    
-    const ts = m.exports;
+    const loader = new TypeScriptModuleLoader(libFilename, readFileSync(libFilename, 'utf8'));
+
+    if (!require.cache[libFilename]) {
+        require.cache[libFilename] = new LazyTypeScriptModule(libFilename, loader);
+    }
+
+    const typescriptLibFilename = join(dirname(libFilename), 'typescript.js');
+    if (!require.cache[typescriptLibFilename]) {
+        require.cache[typescriptLibFilename] = new LazyTypeScriptModule(typescriptLibFilename, loader);
+    }
+
+    const ts = loader.loadToModule(new TypeScriptModule(libFilename))
 
     const [major, minor] = ts.versionMajorMinor.split('.');
     if (+major < 3 && +minor < 7) {
         throw new Error('ttypescript supports typescript from 2.7 version');
     }
-    patchCreateProgram(ts, forceConfigLoad);
-    return ts;
+
+    return patchCreateProgram(ts, forceConfigLoad);
 }
