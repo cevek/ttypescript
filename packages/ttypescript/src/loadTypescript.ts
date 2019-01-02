@@ -7,93 +7,32 @@ import { dirname } from 'path';
 import { runInThisContext } from 'vm'
 import Module = require('module')
 
-export function resolveTypeScriptModule(filename: string, folder: string = __dirname): string {
-    return resolveSync('typescript/lib/' + filename, { basedir: folder });
-}
-
-const moduleLoaderCache: { [key: string]: TypeScriptModuleLoader } = Object.create(null)
-
-export class TypeScriptModuleLoader {
-    private readonly _loader: Function;
-    public readonly filename: string;
-
-    public constructor(filename: string, code: string) {
-        this.filename = filename;
-        
-        this._loader = runInThisContext(
-            `(function (exports, require, module, __filename, __dirname, ts) {${code}\n});`,
-            { filename, lineOffset: 0, displayErrors: true }
-        );
-    }
-
-    /**
-     * Loads a new pristine typescript into the specified module.
-     * @param destination The destination module
-     * @param ts The optional typescript namespace.
-     */
-    public loadToModule(destination: Module, ts?: ts) {
-        this._loader.call(destination.exports, destination.exports, require, this, destination.filename, dirname(destination.filename), ts || destination.exports);
-        return destination.exports
-    };
-
-    /**
-     * Loads only once a TypeScriptModuleLoader
-     * @param filename The full path of the typescript compiler module to load
-     */
-    public static get(filename: string): TypeScriptModuleLoader {
-        let loader = moduleLoaderCache[filename];
-        if (loader === undefined) {
-            loader = new TypeScriptModuleLoader(filename, readFileSync(filename, 'utf8'));
-            moduleLoaderCache[filename] = loader;
-        }
-        return loader
-    }
-}
-
-/**
- * A generic pre-loaded NodeJS module.
- */
-export class TypeScriptModule extends Module {
-    public constructor(filename: string) {
-        super(filename, module)
-        this.filename = filename;
-        this.loaded = true;
-        this.paths = module.paths.slice();
-    }
-}
-
-/**
- * A NodeJS module that supports lazy loading of the given TypeScriptModuleLoader
- */
-class LazyTypeScriptModule extends TypeScriptModule {
-    public constructor(filename: string, loader: TypeScriptModuleLoader) {
-        super(filename)
-        const exports = this.exports
-        Object.defineProperty(this, 'exports', {
-            get: () => {
-                this.exports = exports
-                return loader.loadToModule(this)
-            },
-            set: (value: ts) => Object.defineProperty(this, 'exports', { value, enumerable: true, configurable: true, writable: true }),
-            enumerable: true,
-            configurable: true
-        });
-    }
-}
+type TypeScriptModuleFactory = (exports: ts, require: NodeRequireFunction, module: { exports: any }, filename: string, dirname: string) => ts;
+const typeScriptModuleFactoryCache: { [key: string]: TypeScriptModuleFactory } = Object.create(null)
 
 export function loadTypeScript(
     filename: string,
-    { folder, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
+    { folder = __dirname, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
 ): ts {
+    const libFilename = resolveSync('typescript/lib/' + filename, { basedir: folder })
 
-    const libFilename = resolveTypeScriptModule(filename, folder)
-    const loader = TypeScriptModuleLoader.get(libFilename);
-
-    if (!require.cache[libFilename]) {
-        require.cache[libFilename] = new LazyTypeScriptModule(libFilename, loader);
+    let factory = typeScriptModuleFactoryCache[libFilename];
+    if (!factory) {
+        const code = readFileSync(libFilename, 'utf8');
+        factory = runInThisContext(
+            `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
+            { filename: libFilename, lineOffset: 0, displayErrors: true }
+        )
+        typeScriptModuleFactoryCache[libFilename] = factory;
     }
 
-    const ts = loader.loadToModule(new TypeScriptModule(libFilename))
+    if (!require.cache[libFilename]) {
+        require.cache[libFilename] = createPristineTypeScriptLazyModule(libFilename, factory);
+    }
+
+    const m = { exports: {} as ts };
+    factory.call(m.exports, m.exports, require, m, libFilename, dirname(libFilename));
+    const ts = m.exports;
 
     const [major, minor] = ts.versionMajorMinor.split('.');
     if (+major < 3 && +minor < 7) {
@@ -101,4 +40,27 @@ export function loadTypeScript(
     }
 
     return patchCreateProgram(ts, forceConfigLoad);
+}
+
+function createPristineTypeScriptLazyModule(filename: string, factory: TypeScriptModuleFactory) {
+    const m = new Module(filename, module);
+    m.filename = filename;
+    m.loaded = true;
+    m.paths = module.paths.slice();
+    let exports: any
+    Object.defineProperty(m, 'exports', {
+        get() {
+            if (exports === undefined) {
+                exports = {}
+                factory.call(exports, exports, require, m, filename, dirname(filename));
+            }
+            return exports;
+        },
+        set(value: any) {
+            exports = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return m;
 }
