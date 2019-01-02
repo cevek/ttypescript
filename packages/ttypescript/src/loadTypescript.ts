@@ -1,4 +1,5 @@
 import * as TS from 'typescript';
+type ts = typeof TS;
 import { readFileSync } from 'fs';
 import { sync as resolveSync } from 'resolve';
 import { patchCreateProgram } from './patchCreateProgram';
@@ -14,7 +15,7 @@ const moduleLoaderCache: { [key: string]: TypeScriptModuleLoader } = Object.crea
 
 export class TypeScriptModuleLoader {
     public readonly filename: string;
-    public readonly loadToModule: (m: Module, ts?: typeof TS) => any;
+    public readonly loadToModule: (m: Module, ts?: ts) => any;
 
     public constructor(filename: string, code: string) {
         this.filename = filename;
@@ -24,7 +25,7 @@ export class TypeScriptModuleLoader {
             { filename, lineOffset: 0, displayErrors: true }
         );
 
-        this.loadToModule = (m: Module, ts?: typeof TS) => {
+        this.loadToModule = (m: Module, ts?: ts) => {
             loader.call(m.exports, m.exports, require, this, m.filename, dirname(m.filename), ts || m.exports);
             return m.exports
         };
@@ -58,17 +59,18 @@ class LazyTypeScriptModule extends TypeScriptModule {
                 this.exports = exports
                 return loader.loadToModule(this)
             },
-            set: (value: typeof TS) => Object.defineProperty(this, 'exports', { value, enumerable: true, configurable: true, writable: true }),
+            set: (value: ts) => Object.defineProperty(this, 'exports', { value, enumerable: true, configurable: true, writable: true }),
             enumerable: true,
             configurable: true
         });
     }
 }
 
+
 export function loadTypeScript(
     filename: string,
     { folder, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
-): typeof TS {
+): ts {
 
     const libFilename = resolveTypeScriptModule(filename, folder)
     const loader = TypeScriptModuleLoader.get(libFilename);

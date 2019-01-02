@@ -67,7 +67,7 @@ function createTransformerFromPattern({
     program,
     ls,
 }: {
-    typescript: typeof ts;
+    typescript: typeof ts; 
     factory: PluginFactory;
     config: PluginConfig;
     program: ts.Program;
