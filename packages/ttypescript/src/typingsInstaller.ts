@@ -1,3 +1,1 @@
-// @ts-ignore
-import * as installer from 'typescript/lib/typingsInstaller';
-export = installer;
+module.exports = require('typescript/lib/typingsInstaller');
