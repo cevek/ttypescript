@@ -57,7 +57,7 @@ class LazyTypeScriptModule extends TypeScriptModule {
 
 export function loadTypeScript(
     filename: string,
-    { folder = undefined, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
+    { folder, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
 ): typeof TS {
     const libFilename = resolveTypeScriptModule(filename, folder);
 
