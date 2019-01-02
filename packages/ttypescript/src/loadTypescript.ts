@@ -14,23 +14,32 @@ export function resolveTypeScriptModule(filename: string, folder: string = __dir
 const moduleLoaderCache: { [key: string]: TypeScriptModuleLoader } = Object.create(null)
 
 export class TypeScriptModuleLoader {
+    private readonly _loader: Function;
     public readonly filename: string;
-    public readonly loadToModule: (m: Module, ts?: ts) => any;
 
     public constructor(filename: string, code: string) {
         this.filename = filename;
         
-        const loader = runInThisContext(
+        this._loader = runInThisContext(
             `(function (exports, require, module, __filename, __dirname, ts) {${code}\n});`,
             { filename, lineOffset: 0, displayErrors: true }
         );
-
-        this.loadToModule = (m: Module, ts?: ts) => {
-            loader.call(m.exports, m.exports, require, this, m.filename, dirname(m.filename), ts || m.exports);
-            return m.exports
-        };
     }
 
+    /**
+     * Loads a new pristine typescript into the specified module.
+     * @param destination The destination module
+     * @param ts The optional typescript namespace.
+     */
+    public loadToModule(destination: Module, ts?: ts) {
+        this._loader.call(destination.exports, destination.exports, require, this, destination.filename, dirname(destination.filename), ts || destination.exports);
+        return destination.exports
+    };
+
+    /**
+     * Loads only once a TypeScriptModuleLoader
+     * @param filename The full path of the typescript compiler module to load
+     */
     public static get(filename: string): TypeScriptModuleLoader {
         let loader = moduleLoaderCache[filename];
         if (loader === undefined) {
@@ -41,6 +50,9 @@ export class TypeScriptModuleLoader {
     }
 }
 
+/**
+ * A generic pre-loaded NodeJS module.
+ */
 export class TypeScriptModule extends Module {
     public constructor(filename: string) {
         super(filename, module)
@@ -50,6 +62,9 @@ export class TypeScriptModule extends Module {
     }
 }
 
+/**
+ * A NodeJS module that supports lazy loading of the given TypeScriptModuleLoader
+ */
 class LazyTypeScriptModule extends TypeScriptModule {
     public constructor(filename: string, loader: TypeScriptModuleLoader) {
         super(filename)
@@ -65,7 +80,6 @@ class LazyTypeScriptModule extends TypeScriptModule {
         });
     }
 }
-
 
 export function loadTypeScript(
     filename: string,
