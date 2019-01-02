@@ -47,17 +47,17 @@ function createPristineTypeScriptLazyModule(filename: string, factory: TypeScrip
     m.filename = filename;
     m.loaded = true;
     m.paths = module.paths.slice();
-    let exports: any
+    let ts: ts | undefined
     Object.defineProperty(m, 'exports', {
         get() {
-            if (exports === undefined) {
-                exports = {}
-                factory.call(exports, exports, require, m, filename, dirname(filename));
+            if (ts === undefined) {
+                ts = {} as ts
+                factory.call(ts, ts, require, m, filename, dirname(filename));
             }
-            return exports;
+            return ts;
         },
         set(value: any) {
-            exports = value;
+            ts = value;
         },
         enumerable: true,
         configurable: true
