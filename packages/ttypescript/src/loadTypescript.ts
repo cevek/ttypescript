@@ -10,6 +10,8 @@ export function resolveTypeScriptModule(filename: string, folder: string = __dir
     return resolveSync('typescript/lib/' + filename, { basedir: folder });
 }
 
+const moduleLoaderCache: { [key: string]: TypeScriptModuleLoader } = Object.create(null)
+
 export class TypeScriptModuleLoader {
     public readonly filename: string;
     public readonly loadToModule: (m: Module, ts?: typeof TS) => any;
@@ -26,6 +28,15 @@ export class TypeScriptModuleLoader {
             loader.call(m.exports, m.exports, require, this, m.filename, dirname(m.filename), ts || m.exports);
             return m.exports
         };
+    }
+
+    public static get(filename: string): TypeScriptModuleLoader {
+        let loader = moduleLoaderCache[filename];
+        if (loader === undefined) {
+            loader = new TypeScriptModuleLoader(filename, readFileSync(filename, 'utf8'));
+            moduleLoaderCache[filename] = loader;
+        }
+        return loader
     }
 }
 
@@ -58,9 +69,9 @@ export function loadTypeScript(
     filename: string,
     { folder, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
 ): typeof TS {
-    const libFilename = resolveTypeScriptModule(filename, folder);
 
-    const loader = new TypeScriptModuleLoader(libFilename, readFileSync(libFilename, 'utf8'));
+    const libFilename = resolveTypeScriptModule(filename, folder)
+    const loader = TypeScriptModuleLoader.get(libFilename);
 
     if (!require.cache[libFilename]) {
         require.cache[libFilename] = new LazyTypeScriptModule(libFilename, loader);
