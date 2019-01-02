@@ -45,8 +45,7 @@ class LazyTypeScriptModule extends TypeScriptModule {
         Object.defineProperty(this, 'exports', {
             get: () => {
                 this.exports = exports
-                loader.loadToModule(this)
-                return this.exports
+                return loader.loadToModule(this)
             },
             set: (value: typeof TS) => Object.defineProperty(this, 'exports', { value, enumerable: true, configurable: true, writable: true }),
             enumerable: true,
