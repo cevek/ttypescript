@@ -3,7 +3,7 @@ type ts = typeof TS;
 import { readFileSync } from 'fs';
 import { sync as resolveSync } from 'resolve';
 import { patchCreateProgram } from './patchCreateProgram';
-import { join, dirname } from 'path';
+import { dirname } from 'path';
 import { runInThisContext } from 'vm'
 import Module = require('module')
 
@@ -77,11 +77,6 @@ export function loadTypeScript(
 
     if (!require.cache[libFilename]) {
         require.cache[libFilename] = new LazyTypeScriptModule(libFilename, loader);
-    }
-
-    const typescriptLibFilename = join(dirname(libFilename), 'typescript.js');
-    if (!require.cache[typescriptLibFilename]) {
-        require.cache[typescriptLibFilename] = new LazyTypeScriptModule(typescriptLibFilename, loader);
     }
 
     const ts = loader.loadToModule(new TypeScriptModule(libFilename))
