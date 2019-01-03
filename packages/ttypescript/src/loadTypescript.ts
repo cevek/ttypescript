@@ -7,32 +7,17 @@ import { dirname } from 'path';
 import { runInThisContext } from 'vm'
 import Module = require('module')
 
-type TypeScriptModuleFactory = (exports: ts, require: NodeRequireFunction, module: { exports: any }, filename: string, dirname: string) => ts;
-const typeScriptModuleFactoryCache: { [key: string]: TypeScriptModuleFactory } = Object.create(null)
-
 export function loadTypeScript(
     filename: string,
     { folder = __dirname, forceConfigLoad = false }: { folder?: string; forceConfigLoad?: boolean } = {}
 ): ts {
     const libFilename = resolveSync('typescript/lib/' + filename, { basedir: folder })
 
-    let factory = typeScriptModuleFactoryCache[libFilename];
-    if (!factory) {
-        const code = readFileSync(libFilename, 'utf8');
-        factory = runInThisContext(
-            `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
-            { filename: libFilename, lineOffset: 0, displayErrors: true }
-        )
-        typeScriptModuleFactoryCache[libFilename] = factory;
-    }
-
     if (!require.cache[libFilename]) {
-        require.cache[libFilename] = createPristineTypeScriptLazyModule(libFilename, factory);
+        require.cache[libFilename] = new PristineTypeScriptModule(libFilename);
     }
 
-    const m = { exports: {} as ts };
-    factory.call(m.exports, m.exports, require, m, libFilename, dirname(libFilename));
-    const ts = m.exports;
+    const ts = loadPristineTypeScriptModule(libFilename);
 
     const [major, minor] = ts.versionMajorMinor.split('.');
     if (+major < 3 && +minor < 7) {
@@ -42,25 +27,43 @@ export function loadTypeScript(
     return patchCreateProgram(ts, forceConfigLoad);
 }
 
-function createPristineTypeScriptLazyModule(filename: string, factory: TypeScriptModuleFactory) {
-    const m = new Module(filename, module);
-    m.filename = filename;
-    m.loaded = true;
-    m.paths = module.paths.slice();
-    let ts: ts | undefined
-    Object.defineProperty(m, 'exports', {
-        get() {
-            if (ts === undefined) {
-                ts = {} as ts
-                factory.call(ts, ts, require, m, filename, dirname(filename));
-            }
-            return ts;
-        },
-        set(value: any) {
-            ts = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return m;
+const typeScriptModuleInitializerCache: {
+    [filename: string]: (exports: ts, require: NodeRequireFunction, module: { exports: any }, filename: string, dirname: string, ts?: ts) => ts
+} = Object.create(null);
+
+function loadPristineTypeScriptModule(filename: string): ts {
+    let factory = typeScriptModuleInitializerCache[filename];
+    if (!factory) {
+        const code = readFileSync(filename, 'utf8');
+        factory = runInThisContext(
+            `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
+            { filename, lineOffset: 0, displayErrors: true }
+        )
+        typeScriptModuleInitializerCache[filename] = factory;
+    }
+    const m = { exports: {} as ts };
+    factory.call(m.exports, m.exports, require, m, filename, dirname(filename));
+    return m.exports;
+}
+
+class PristineTypeScriptModule extends Module {
+    private _exports: ts = {} as ts;
+
+    public constructor(public readonly filename: string) {
+        super(filename, module);
+        this.paths = module.paths.slice();
+    }
+
+    public get exports(): ts {
+        if (!this.loaded) {
+            this.loaded = true;
+            this._exports = loadPristineTypeScriptModule(this.filename);
+        }
+        return this._exports;
+    }
+
+    public set exports(value: ts) {
+        this.loaded = true;
+        this._exports = value;
+    }
 }
