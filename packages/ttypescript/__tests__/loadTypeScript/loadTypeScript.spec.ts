@@ -79,7 +79,6 @@ describe('loadTypeScript', () => {
         const ts: any = loadTypeScript('requireCache', { folder: 'mocks' });
         const cached = ts.cachedModule;
         expect(cached).toBeInstanceOf(Module);
-        expect(cached.loaded).toBe(false);
         expect(cached.exports.versionMajorMinor).toBe('99.0');
         expect(cached.loaded).toBe(true);
         expect(cached.exports).toBe(cached.exports);
