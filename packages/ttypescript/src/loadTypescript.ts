@@ -13,11 +13,11 @@ export function loadTypeScript(
 ): ts {
     const libFilename = resolveSync('typescript/lib/' + filename, { basedir: folder })
 
-    if (!require.cache[libFilename]) {
-        require.cache[libFilename] = new PristineTypeScriptModule(libFilename);
+    if (!(libFilename in require.cache)) {
+        require.cache[libFilename] = new TypeScriptModule(libFilename);
     }
 
-    const ts = loadPristineTypeScriptModule(libFilename);
+    const ts = new TypeScriptModule(libFilename).exports;
 
     const [major, minor] = ts.versionMajorMinor.split('.');
     if (+major < 3 && +minor < 7) {
@@ -27,43 +27,38 @@ export function loadTypeScript(
     return patchCreateProgram(ts, forceConfigLoad);
 }
 
-const typeScriptModuleInitializerCache: {
-    [filename: string]: (exports: ts, require: NodeRequireFunction, module: { exports: any }, filename: string, dirname: string, ts?: ts) => ts
-} = Object.create(null);
+type TypeScriptModuleInitializer = (exports: ts, require: NodeRequireFunction, module: Module, filename: string, dirname: string, ts?: ts) => void
+const typeScriptModuleInitializerCache: { [filename: string]: TypeScriptModuleInitializer } = Object.create(null);
 
-function loadPristineTypeScriptModule(filename: string): ts {
-    let factory = typeScriptModuleInitializerCache[filename];
-    if (!factory) {
-        const code = readFileSync(filename, 'utf8');
-        factory = runInThisContext(
-            `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
-            { filename, lineOffset: 0, displayErrors: true }
-        )
-        typeScriptModuleInitializerCache[filename] = factory;
-    }
-    const m = { exports: {} as ts };
-    factory.call(m.exports, m.exports, require, m, filename, dirname(filename));
-    return m.exports;
-}
-
-class PristineTypeScriptModule extends Module {
-    private _exports: ts = {} as ts;
+class TypeScriptModule extends Module {
+    public readonly paths = module.paths.slice();
+    private _exports: ts | null = null;
 
     public constructor(public readonly filename: string) {
         super(filename, module);
-        this.paths = module.paths.slice();
     }
 
     public get exports(): ts {
-        if (!this.loaded) {
-            this.loaded = true;
-            this._exports = loadPristineTypeScriptModule(this.filename);
-        }
-        return this._exports;
+        return this._exports || this._initializeTypeScriptExports();
     }
 
     public set exports(value: ts) {
-        this.loaded = true;
         this._exports = value;
+    }
+
+    private _initializeTypeScriptExports(): ts {
+        let initModule: TypeScriptModuleInitializer = typeScriptModuleInitializerCache[this.filename];
+        if (!initModule) {
+            const code = readFileSync(this.filename, 'utf8');
+            initModule = runInThisContext(
+                `(function (exports, require, module, __filename, __dirname) {${code}\n});`,
+                { filename: this.filename, lineOffset: 0, displayErrors: true }
+            );
+            typeScriptModuleInitializerCache[this.filename] = initModule;
+        }
+        this._exports = {} as ts;
+        initModule.call(this._exports, this._exports, require, this, this.filename, dirname(this.filename));
+        this.loaded = true;
+        return this._exports;
     }
 }
