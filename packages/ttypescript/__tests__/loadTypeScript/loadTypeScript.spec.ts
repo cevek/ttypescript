@@ -58,12 +58,14 @@ describe('loadTypeScript', () => {
         expect(ts.args.__dirname).toBe(path.join(__dirname, 'mocks'));
     });
 
-    it('returns always a different instance', () => {
-        const ts1: any = loadTypeScript('selfRequire', { folder: 'mocks' });
-        const ts2: any = loadTypeScript('selfRequire', { folder: 'mocks' });
-        expect(ts1.versionMajorMinor).toBe('99.0');
-        expect(ts2.versionMajorMinor).toBe('99.0');
+    it('returns always a different instance, calling vm.runInThisContext only once', () => {
+        const runInThisContextSpy = jest.spyOn(vm, 'runInThisContext');
+        const ts1: any = loadTypeScript('runInThisContextOnce', { folder: 'mocks' });
+        const ts2: any = loadTypeScript('runInThisContextOnce', { folder: 'mocks' });
+        expect(ts1.versionMajorMinor).toBe('100.0');
+        expect(ts2.versionMajorMinor).toBe('100.0');
         expect(ts1 !== ts2).toBe(true);
+        expect(runInThisContextSpy).toBeCalledTimes(1);
     });
 
     it('does not alter standard require pristine typescript', () => {
