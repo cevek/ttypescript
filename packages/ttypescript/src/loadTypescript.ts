@@ -47,6 +47,7 @@ class TypeScriptModule extends Module {
     }
 
     private _initializeTypeScriptExports(): ts {
+        this._exports = {} as ts;
         let initModule: TypeScriptModuleInitializer = typeScriptModuleInitializerCache[this.filename];
         if (!initModule) {
             const code = readFileSync(this.filename, 'utf8');
@@ -56,7 +57,6 @@ class TypeScriptModule extends Module {
             );
             typeScriptModuleInitializerCache[this.filename] = initModule;
         }
-        this._exports = {} as ts;
         initModule.call(this._exports, this._exports, require, this, this.filename, dirname(this.filename));
         this.loaded = true;
         return this._exports;
