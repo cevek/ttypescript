@@ -27,7 +27,7 @@ export function loadTypeScript(
     return patchCreateProgram(ts, forceConfigLoad);
 }
 
-type TypeScriptModuleInitializer = (exports: ts, require: NodeRequireFunction, module: Module, filename: string, dirname: string, ts?: ts) => void
+type TypeScriptModuleInitializer = (exports: ts, require: NodeRequireFunction, module: Module, filename: string, dirname: string) => void
 const typeScriptModuleInitializerCache: { [filename: string]: TypeScriptModuleInitializer } = Object.create(null);
 
 class TypeScriptModule extends Module {
