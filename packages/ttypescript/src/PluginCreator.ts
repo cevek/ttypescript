@@ -1,6 +1,7 @@
 import * as resolve from 'resolve';
 import * as ts from 'typescript';
 import { inspect } from 'util';
+import { addDiagnosticFactory } from './patchCreateProgram';
 
 export interface PluginConfig {
     /**
@@ -38,12 +39,16 @@ export interface TransformerBasePlugin {
     after?: ts.TransformerFactory<ts.SourceFile>;
     afterDeclarations?: ts.TransformerFactory<ts.SourceFile | ts.Bundle>;
 }
-export type TransformerList = Required<ts.CustomTransformers>
+export type TransformerList = Required<ts.CustomTransformers>;
 
 export type TransformerPlugin = TransformerBasePlugin | ts.TransformerFactory<ts.SourceFile>;
 
 export type LSPattern = (ls: ts.LanguageService, config: {}) => TransformerPlugin;
-export type ProgramPattern = (program: ts.Program, config: {}, helpers?: { ts: typeof ts }) => TransformerPlugin;
+export type ProgramPattern = (
+    program: ts.Program,
+    config: {},
+    helpers?: { ts: typeof ts; addDiagnostic: (diag: ts.Diagnostic) => void }
+) => TransformerPlugin;
 export type CompilerOptionsPattern = (compilerOpts: ts.CompilerOptions, config: {}) => TransformerPlugin;
 export type ConfigPattern = (config: {}) => TransformerPlugin;
 export type TypeCheckerPattern = (checker: ts.TypeChecker, config: {}) => TransformerPlugin;
@@ -67,7 +72,7 @@ function createTransformerFromPattern({
     program,
     ls,
 }: {
-    typescript: typeof ts; 
+    typescript: typeof ts;
     factory: PluginFactory;
     config: PluginConfig;
     program: ts.Program;
@@ -92,7 +97,10 @@ function createTransformerFromPattern({
             break;
         case undefined:
         case 'program':
-            ret = (factory as ProgramPattern)(program, cleanConfig, { ts: typescript });
+            ret = (factory as ProgramPattern)(program, cleanConfig, {
+                ts: typescript,
+                addDiagnostic: addDiagnosticFactory(program),
+            });
             break;
         case 'raw':
             ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program, cleanConfig);
@@ -126,12 +134,16 @@ const requireStack: string[] = [];
  * ]).createTransformers({ program })
  */
 export class PluginCreator {
-    constructor(private typescript: typeof ts, private configs: PluginConfig[], private resolveBaseDir: string = process.cwd()) {
+    constructor(
+        private typescript: typeof ts,
+        private configs: PluginConfig[],
+        private resolveBaseDir: string = process.cwd()
+    ) {
         this.validateConfigs(configs);
     }
 
     mergeTransformers(into: TransformerList, source: ts.CustomTransformers | TransformerBasePlugin) {
-        const slice = <T>(input: T | T[]) => Array.isArray(input) ? input.slice() : [input]
+        const slice = <T>(input: T | T[]) => (Array.isArray(input) ? input.slice() : [input]);
         if (source.before) {
             into.before.push(...slice(source.before));
         }
@@ -141,10 +153,13 @@ export class PluginCreator {
         if (source.afterDeclarations) {
             into.afterDeclarations.push(...slice(source.afterDeclarations));
         }
-        return this
+        return this;
     }
 
-    createTransformers(params: { program: ts.Program } | { ls: ts.LanguageService }, customTransformers?: ts.CustomTransformers) {
+    createTransformers(
+        params: { program: ts.Program } | { ls: ts.LanguageService },
+        customTransformers?: ts.CustomTransformers
+    ) {
         const chain: TransformerList = {
             before: [],
             after: [],
@@ -172,12 +187,12 @@ export class PluginCreator {
                 program,
                 ls,
             });
-            this.mergeTransformers(chain, transformer)
+            this.mergeTransformers(chain, transformer);
         }
 
         // if we're given some custom transformers, they must be chained at the end
         if (customTransformers) {
-            this.mergeTransformers(chain, customTransformers)
+            this.mergeTransformers(chain, customTransformers);
         }
 
         return chain;

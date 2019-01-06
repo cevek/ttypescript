@@ -1,6 +1,7 @@
 import { dirname } from 'path';
 import * as ts from 'typescript';
 import { PluginConfig, PluginCreator } from './PluginCreator';
+import { Diagnostic } from 'typescript/lib/tsserverlibrary';
 
 declare module 'typescript' {
     interface CreateProgramOptions {
@@ -17,6 +18,16 @@ declare module 'typescript' {
         prepend?: boolean;
         circular?: boolean;
     }
+}
+
+export const transformerErrors = new WeakMap<ts.Program, Diagnostic[]>();
+
+export function addDiagnosticFactory(program: ts.Program) {
+    return (diag: ts.Diagnostic) => {
+        const arr = transformerErrors.get(program) || [];
+        arr.push(diag);
+        transformerErrors.set(program, arr);
+    };
 }
 
 export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, projectDir = process.cwd()) {
@@ -61,7 +72,7 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
             }
             projectDir = info.projectDir;
         }
-        const program = createOpts
+        const program: ts.Program = createOpts
             ? originCreateProgram(createOpts)
             : originCreateProgram(rootNames, options, host, oldProgram, configFileParsingDiagnostics);
 
@@ -76,17 +87,29 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
             emitOnlyDtsFiles?: boolean,
             customTransformers?: ts.CustomTransformers
         ): ts.EmitResult {
-            const mergedTransformers = pluginCreator.createTransformers({ program }, customTransformers)
-            return originEmit(targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, mergedTransformers);
+            const mergedTransformers = pluginCreator.createTransformers({ program }, customTransformers);
+            const result: ts.EmitResult = originEmit(
+                targetSourceFile,
+                writeFile,
+                cancellationToken,
+                emitOnlyDtsFiles,
+                mergedTransformers
+            );
+            result.diagnostics = [...result.diagnostics, ...transformerErrors.get(program)!];
+            return result;
         };
-
         return program;
     }
     tsm.createProgram = createProgram;
     return tsm;
 }
 
-function getConfig(tsm: typeof ts, compilerOptions: ts.CompilerOptions, rootFileNames: ReadonlyArray<string>, defaultDir: string) {
+function getConfig(
+    tsm: typeof ts,
+    compilerOptions: ts.CompilerOptions,
+    rootFileNames: ReadonlyArray<string>,
+    defaultDir: string
+) {
     if (compilerOptions.configFilePath === undefined) {
         const dir = rootFileNames.length > 0 ? dirname(rootFileNames[0]) : defaultDir;
         const tsconfigPath = tsm.findConfigFile(dir, tsm.sys.fileExists);
