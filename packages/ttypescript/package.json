@@ -4,7 +4,7 @@
     "ttsc": "./bin/tsc",
     "ttsserver": "./bin/tsserver"
   },
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "files": [
