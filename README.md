@@ -171,7 +171,7 @@ or
 ts-node -C ttypescript index.ts
 ```
 
-### Rollup
+### Parcel
 
 Just install a parcel plugin
 ```
