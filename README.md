@@ -171,6 +171,14 @@ or
 ts-node -C ttypescript index.ts
 ```
 
+### Parcel
+
+Just install a parcel plugin
+```
+npm i parcel-plugin-ttypescript
+```
+
+
 ### Webpack
 ```js
     {
