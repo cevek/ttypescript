@@ -209,8 +209,8 @@ export default {
 }
 ```
 
-### VC Code
-If you want to compile your project with VC Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttypescript`: 
+### VS Code
+If you want to compile your project with VS Code task runner you need to overwrite the config `typescript.tsdk` to path of the installed `ttypescript`: 
 ```
 "typescript.tsdk": "/usr/local/lib/node_modules/ttypescript/lib",
 or 
