@@ -258,7 +258,9 @@ Examples of transformers
 
 [`{transform: "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
 
-[`{transform: "typescript-transform-jsx", type: "raw"}`](https://github.com/LeDDGroup/typescript-transform-jsx) 
+[`{transform: "typescript-transform-jsx" }`](https://github.com/LeDDGroup/typescript-transform-jsx) 
+
+[`{transform: "typescript-transform-paths" }`](https://github.com/LeDDGroup/typescript-transform-paths) 
 
 
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
