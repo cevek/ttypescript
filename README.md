@@ -262,6 +262,8 @@ Examples of transformers
 
 [`{transform: "typescript-transform-paths" }`](https://github.com/LeDDGroup/typescript-transform-paths) 
 
+[`{transform: "typescript-transform-macros" }`](https://github.com/LeDDGroup/typescript-transform-macros) 
+
 
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
