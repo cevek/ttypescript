@@ -217,6 +217,30 @@ or
 "typescript.tsdk": "node_modules/ttypescript/lib",
 ```
 
+### Jest, ts-jest
+```js
+module.exports = {
+  // [...]
+  globals: {
+    'ts-jest': {
+      compiler: 'ttypescript'
+    }
+  }
+};
+```
+or in `package.json`
+```json
+{
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "compiler": "ttypescript"
+      }
+    }
+  }
+}
+```
+
 ## Transformers
 
 You can use transformers written in ts or js
