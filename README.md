@@ -290,6 +290,8 @@ Examples of transformers
 
 [`{transform: "typescript-transform-macros" }`](https://github.com/LeDDGroup/typescript-transform-macros) 
 
+[`{transform: "ts-transformer-minify-privates" }`](https://github.com/timocov/ts-transformer-minify-privates) 
+
 
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
