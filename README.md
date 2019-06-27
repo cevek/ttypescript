@@ -292,6 +292,8 @@ Examples of transformers
 
 [`{transform: "ts-transformer-minify-privates" }`](https://github.com/timocov/ts-transformer-minify-privates) 
 
+[`{transform: "typescript-plugin-styled-components", type: "config"}`](https://github.com/Igorbek/typescript-plugin-styled-components#ttypescript-compiler)
+
 
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
