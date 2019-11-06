@@ -21,7 +21,6 @@ declare module 'typescript' {
 }
 
 export const transformerErrors = new WeakMap<ts.Program, Diagnostic[]>();
-
 export function addDiagnosticFactory(program: ts.Program) {
     return (diag: ts.Diagnostic) => {
         const arr = transformerErrors.get(program) || [];
@@ -95,7 +94,8 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
                 emitOnlyDtsFiles,
                 mergedTransformers
             );
-            result.diagnostics = [...result.diagnostics, ...transformerErrors.get(program)!];
+            // todo: doesn't work with 3.7
+            // result.diagnostics = [...result.diagnostics, ...transformerErrors.get(program)!];
             return result;
         };
         return program;
