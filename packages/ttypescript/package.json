@@ -18,7 +18,7 @@
     "type": "git",
     "url": "https://github.com/cevek/ttypescript.git"
   },
-  "homepage": "https://github.com/cevek/ttypescript/packages/ttypescript/#readme",
+  "homepage": "https://github.com/cevek/ttypescript/tree/master/packages/ttypescript",
   "keywords": [
     "typescript",
     "wrapper",
