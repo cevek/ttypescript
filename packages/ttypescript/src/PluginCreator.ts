@@ -201,7 +201,7 @@ export class PluginCreator {
     private resolveFactory(transform: string, importKey: string = 'default'): PluginFactory | undefined {
         if (
             !tsNodeIncluded &&
-            transform.match(/\.ts$/) &&
+            transform.match(/\.tsx?$/) &&
             (module.parent!.parent === null ||
                 module.parent!.parent!.parent === null ||
                 module.parent!.parent!.parent!.id.split(/[\/\\]/).indexOf('ts-node') === -1)
@@ -210,7 +210,8 @@ export class PluginCreator {
                 transpileOnly: true,
                 skipProject: true,
                 compilerOptions: {
-                    target: 'es5',
+                    target: 'es6',
+                    jsx: 'react',
                     module: 'commonjs',
                 },
             });
