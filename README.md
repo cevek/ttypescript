@@ -270,6 +270,10 @@ Examples of transformers:
 
 [`{ "transform": "ts-optchain/transform" }`](https://github.com/rimeto/ts-optchain) 
 
+[`{ "transform": "ts-transform-asset" }`](https://github.com/slune-org/ts-transform-asset) 
+
+[`{ "transform": "ts-transform-auto-require" }`](https://github.com/slune-org/ts-transform-auto-require) 
+
 [`{ "transform": "ts-transform-css-modules/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
 
 [`{ "transform": "ts-transform-graphql-tag/dist/transformer"}`](https://github.com/firede/ts-transform-graphql-tag) 
@@ -301,6 +305,8 @@ Examples of transformers:
 Writing transformers:
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
+- [Transformer framework](https://github.com/slune-org/simple-ts-transform)
+- [Unit testing transformer compiler](https://github.com/slune-org/ts-transform-test-compiler)
 
 ## Example
 An example project is in the [example](./packages/ttypescript-examples) directory
