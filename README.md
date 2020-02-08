@@ -298,6 +298,8 @@ Examples of transformers
 
 [`{ "transform": "@zerollup/ts-transform-paths" }`](https://github.com/zerkalica/zerollup/tree/master/packages/ts-transform-paths)
 
+[`"transform": "@magic-works/ttypescript-browser-like-import-transformer"}`](https://github.com/Jack-Works/ttypescript-browser-like-import-transformer)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 
