@@ -264,42 +264,43 @@ export default function(program: ts.Program, pluginOptions: {}) {
 
 ```
 
-Examples of transformers
+Examples of transformers:
+
+[`{ "transform": "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
 
 [`{ "transform": "ts-optchain/transform" }`](https://github.com/rimeto/ts-optchain) 
 
-[`{transform: "typescript-is/lib/transform-inline/transformer"}`](https://github.com/woutervh-/typescript-is) 
+[`{ "transform": "ts-transform-css-modules/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
 
-[`{transform: "ts-transformer-keys/transformer"}`](https://github.com/kimamula/ts-transformer-keys) 
+[`{ "transform": "ts-transform-graphql-tag/dist/transformer"}`](https://github.com/firede/ts-transform-graphql-tag) 
 
-[`{transform: "ts-transformer-enumerate/transformer"}`](https://github.com/kimamula/ts-transformer-enumerate)
+[`{ "transform": "ts-transform-img/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-img) 
 
-[`{transform: "ts-transform-graphql-tag/dist/transformer"}`](https://github.com/firede/ts-transform-graphql-tag) 
+[`{ "transform": "ts-transform-react-intl/dist/transform", import: "transform", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
 
-[`{transform: "ts-transform-img/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-img) 
+[`{ "transform": "ts-transformer-enumerate/transformer"}`](https://github.com/kimamula/ts-transformer-enumerate)
 
-[`{transform: "ts-transform-css-modules/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
+[`{ "transform": "ts-transformer-keys/transformer"}`](https://github.com/kimamula/ts-transformer-keys) 
 
-[`{transform: "ts-transform-react-intl/dist/transform", import: "transform", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
+[`{ "transform": "ts-transformer-minify-privates" }`](https://github.com/timocov/ts-transformer-minify-privates) 
 
-[`{transform: "ts-nameof", type: "raw"}`](https://github.com/dsherret/ts-nameof) 
+[`{ "transform": "typescript-is/lib/transform-inline/transformer"}`](https://github.com/woutervh-/typescript-is) 
 
-[`{transform: "typescript-transform-jsx" }`](https://github.com/LeDDGroup/typescript-transform-jsx) 
+[`{ "transform": "typescript-plugin-styled-components", type: "config"}`](https://github.com/Igorbek/typescript-plugin-styled-components#ttypescript-compiler)
 
-[`{transform: "typescript-transform-paths" }`](https://github.com/LeDDGroup/typescript-transform-paths) 
+[`{ "transform": "typescript-transform-jsx" }`](https://github.com/LeDDGroup/typescript-transform-jsx) 
 
-[`{transform: "typescript-transform-macros" }`](https://github.com/LeDDGroup/typescript-transform-macros) 
+[`{ "transform": "typescript-transform-macros" }`](https://github.com/LeDDGroup/typescript-transform-macros) 
 
-[`{transform: "ts-transformer-minify-privates" }`](https://github.com/timocov/ts-transformer-minify-privates) 
-
-[`{transform: "typescript-plugin-styled-components", type: "config"}`](https://github.com/Igorbek/typescript-plugin-styled-components#ttypescript-compiler)
-
-[`{ "transform": "@zoltu/typescript-transformer-append-js-extension" }`](https://github.com/Zoltu/typescript-transformer-append-js-extension)
+[`{ "transform": "typescript-transform-paths" }`](https://github.com/LeDDGroup/typescript-transform-paths) 
 
 [`{ "transform": "@zerollup/ts-transform-paths" }`](https://github.com/zerkalica/zerollup/tree/master/packages/ts-transform-paths)
 
-[Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
+[`{ "transform": "@zoltu/typescript-transformer-append-js-extension" }`](https://github.com/Zoltu/typescript-transformer-append-js-extension)
 
+Writing transformers:
+
+- [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 ## Example
 An example project is in the [example](./packages/ttypescript-examples) directory
