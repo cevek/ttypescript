@@ -304,7 +304,7 @@ Examples of transformers:
 
 [`"transform": "@magic-works/ttypescript-browser-like-import-transformer"}`](https://github.com/Jack-Works/ttypescript-browser-like-import-transformer)
 
-[`"transform": "s-transformer-remove-named-export"}`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
+[`"transform": "ts-transformer-remove-named-export"}`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
 
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
