@@ -302,7 +302,9 @@ Examples of transformers:
 
 [`{ "transform": "@zoltu/typescript-transformer-append-js-extension" }`](https://github.com/Zoltu/typescript-transformer-append-js-extension)
 
-[`"transform": "@magic-works/ttypescript-browser-like-import-transformer"}`](https://github.com/Jack-Works/ttypescript-browser-like-import-transformer)
+[`{ "transform": "@magic-works/ttypescript-browser-like-import-transformer" }`](https://github.com/Jack-Works/ttypescript-browser-like-import-transformer)
+
+[`{ "transform": "typescript-transform-react-jsx-source" }`](https://github.com/alexgorbatchev/typescript-transform-react-jsx-source)
 
 [`"transform": "ts-transformer-remove-named-export"}`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
 
