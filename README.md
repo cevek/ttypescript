@@ -310,6 +310,8 @@ Examples of transformers:
 
 [`{ "transform": "ts-transformer-export-default-name" }`](https://github.com/jirutka/ts-transformer-export-default-name)
 
+[`{ "transform": "ts-transformer-inline-file/transformer" }`](https://github.com/jirutka/ts-transformer-inline-file)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
