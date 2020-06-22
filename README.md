@@ -308,6 +308,8 @@ Examples of transformers:
 
 [`"transform": "ts-transformer-remove-named-export"}`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
 
+[`{ "transform": "ts-transformer-export-default-name" }`](https://github.com/jirutka/ts-transformer-export-default-name)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
