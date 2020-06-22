@@ -174,6 +174,10 @@ export default function(config: { foo: string, bar?: string }): ts.Middleware {
             // pass control either to real ts.createProgram, or to the earlier middleware
             const program = next(opts);
 
+            // it's possible to call `next` multiple times, or not call it at all
+
+            // when `next()` is called without arguments, it will use the same `opts` object as current middleware
+
             // do something with built program
             console.log(program.getTypeCount());
 
@@ -189,7 +193,7 @@ Example configuration:
 {
     "compilerOptions": {
         "plugins": [
-            { "transform": "some-middleware-module", foo: "this is config property", bar: "this is too" }
+            { "transform": "some-middleware-module", "foo": "this is config property", "bar": "this is too" }
         ]
     },
 }
