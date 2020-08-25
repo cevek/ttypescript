@@ -4,7 +4,7 @@
     "ttsc": "./bin/tsc",
     "ttsserver": "./bin/tsserver"
   },
-  "version": "1.5.10",
+  "version": "1.5.11",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "main": "lib/typescript.js",
   "files": [
@@ -29,14 +29,14 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "resolve": "^1.9.0"
+    "resolve": ">=1.9.0"
   },
   "devDependencies": {
-    "ts-node": "^8.0.2",
-    "typescript": "^3.2.2"
+    "ts-node": ">=8.0.2",
+    "typescript": ">=3.2.2"
   },
   "peerDependencies": {
-    "ts-node": "^8.0.2",
-    "typescript": "^3.2.2"
+    "ts-node": ">=8.0.2",
+    "typescript": ">=3.2.2"
   }
 }
