@@ -8,10 +8,14 @@ const ts = loadTypeScript('typescript', { folder: process.cwd(), forceConfigLoad
 const tscFileName = resolve.sync('typescript/lib/tsc', { basedir: process.cwd() });
 const commandLineTsCode = fs
     .readFileSync(tscFileName, 'utf8')
-    .replace(/^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, '$1')
+    .replace(/^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, '$1');
 
-runInThisContext(`(function (exports, require, module, __filename, __dirname, ts) {${commandLineTsCode}\n});`, {
-    filename: tscFileName,
-    lineOffset: 0,
-    displayErrors: true,
-}).call(ts, ts, require, { exports: ts }, tscFileName, dirname(tscFileName), ts);
+const globalCode = (fs.readFileSync(tscFileName, 'utf8').match(/^([\s\S]*?)var ts;/) || ['', ''])[1];
+runInThisContext(
+    `(function (exports, require, module, __filename, __dirname, ts) {${globalCode}${commandLineTsCode}\n});`,
+    {
+        filename: tscFileName,
+        lineOffset: 0,
+        displayErrors: true,
+    }
+).call(ts, ts, require, { exports: ts }, tscFileName, dirname(tscFileName), ts);
