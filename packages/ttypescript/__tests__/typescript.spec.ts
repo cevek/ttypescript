@@ -97,4 +97,28 @@ console.log(abc.toString());
         const result = `var x = 1;\n`;
         expect(res.outputText).toEqual(result);
     });
+
+    it('should run middlewares in order', () => {
+        const lines: string[] = [];
+        const trace = (m: string) => {
+            lines.push(m);
+        }
+
+        const res = ts.transpileModule('import { itWorks } from "##arbitrary##";', {
+            compilerOptions: {
+                plugins: [
+                    { transform: __dirname + '/middlewares/create-program.ts', import: 'foo', type: 'middleware', trace },
+                    { transform: __dirname + '/middlewares/create-program.ts', import: 'bar', type: 'middleware', trace },
+                ] as any,
+            },
+        });
+
+        expect(lines).toEqual([
+            "bar: before",
+            "foo: before",
+            "in hook",
+            "foo: after",
+            "bar: after",
+        ]);
+    });
 });

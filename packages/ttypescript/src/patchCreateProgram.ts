@@ -32,51 +32,21 @@ export function addDiagnosticFactory(program: ts.Program) {
 export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, projectDir = process.cwd()) {
     const originCreateProgram = tsm.createProgram as any;
 
-    function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
-    function createProgram(
-        rootNames: ReadonlyArray<string>,
-        options: ts.CompilerOptions,
-        host?: ts.CompilerHost,
-        oldProgram?: ts.Program,
-        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
-    ): ts.Program;
-    function createProgram(
-        rootNamesOrOptions: ReadonlyArray<string> | ts.CreateProgramOptions,
-        options?: ts.CompilerOptions,
-        host?: ts.CompilerHost,
-        oldProgram?: ts.Program,
-        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
-    ): ts.Program {
-        let rootNames;
-        let createOpts: ts.CreateProgramOptions | undefined;
-        if (!Array.isArray(rootNamesOrOptions)) {
-            createOpts = rootNamesOrOptions as ts.CreateProgramOptions;
-        }
-        if (createOpts) {
-            rootNames = createOpts.rootNames;
-            options = createOpts.options;
-            host = createOpts.host;
-            oldProgram = createOpts.oldProgram;
-            configFileParsingDiagnostics = createOpts.configFileParsingDiagnostics;
-        } else {
-            options = options!;
-            rootNames = rootNamesOrOptions as ReadonlyArray<string>;
-        }
-
+    function createProgramWithOpts(createProgramOptions: ts.CreateProgramOptions): ts.Program {
         if (forceReadConfig) {
-            const info = getConfig(tsm, options, rootNames, projectDir);
-            options = info.compilerOptions;
-            if (createOpts) {
-                createOpts.options = options;
-            }
+            const info = getConfig(tsm, createProgramOptions.options, createProgramOptions.rootNames, projectDir);
+            createProgramOptions.options = info.compilerOptions;
             projectDir = info.projectDir;
         }
-        const program: ts.Program = createOpts
-            ? originCreateProgram(createOpts)
-            : originCreateProgram(rootNames, options, host, oldProgram, configFileParsingDiagnostics);
 
-        const plugins = preparePluginsFromCompilerOptions(options.plugins);
+        const plugins = preparePluginsFromCompilerOptions(createProgramOptions.options.plugins);
         const pluginCreator = new PluginCreator(tsm, plugins, projectDir);
+
+        const middlewares = pluginCreator.createMiddlewares({
+            createProgram: originCreateProgram
+        });
+
+        const program: ts.Program = middlewares.createProgram(createProgramOptions);
 
         const originEmit = program.emit;
         program.emit = function newEmit(
@@ -100,7 +70,37 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
         };
         return program;
     }
+
+    function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
+    function createProgram(
+        rootNames: ReadonlyArray<string>,
+        options: ts.CompilerOptions,
+        host?: ts.CompilerHost,
+        oldProgram?: ts.Program,
+        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
+    ): ts.Program;
+    function createProgram(
+        createProgramOptionsOrRootNames: ts.CreateProgramOptions | ReadonlyArray<string>,
+        options?: ts.CompilerOptions,
+        host?: ts.CompilerHost,
+        oldProgram?: ts.Program,
+        configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
+    ): ts.Program {
+        if (Array.isArray(createProgramOptionsOrRootNames)) {
+            return createProgramWithOpts({
+                rootNames: createProgramOptionsOrRootNames as ReadonlyArray<string>,
+                options: options!,
+                host,
+                oldProgram,
+                configFileParsingDiagnostics
+            });
+        } else {
+            return createProgramWithOpts(createProgramOptionsOrRootNames as ts.CreateProgramOptions);
+        }
+    }
+
     tsm.createProgram = createProgram;
+
     return tsm;
 }
 
