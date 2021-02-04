@@ -79,20 +79,28 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
         const pluginCreator = new PluginCreator(tsm, plugins, projectDir);
 
         const originEmit = program.emit;
+
+        /**
+         * The emit method has the following declaration:
+         * https://github.com/microsoft/TypeScript/blob/bfc55b5762443c37ecdef08a3b5a4e057b4d1e85/src/compiler/builderPublic.ts#L101
+         * The declaration specifies 5 arguments, but it's not true. Sometimes the emit method takes 6 arguments.
+         */
         program.emit = function newEmit(
             targetSourceFile?: ts.SourceFile,
             writeFile?: ts.WriteFileCallback,
             cancellationToken?: ts.CancellationToken,
             emitOnlyDtsFiles?: boolean,
-            customTransformers?: ts.CustomTransformers
+            customTransformers?: ts.CustomTransformers,
+            arg?: boolean
         ): ts.EmitResult {
             const mergedTransformers = pluginCreator.createTransformers({ program }, customTransformers);
-            const result: ts.EmitResult = originEmit(
+            const result: ts.EmitResult = (originEmit as any)(
                 targetSourceFile,
                 writeFile,
                 cancellationToken,
                 emitOnlyDtsFiles,
-                mergedTransformers
+                mergedTransformers,
+                arg
             );
             // todo: doesn't work with 3.7
             // result.diagnostics = [...result.diagnostics, ...transformerErrors.get(program)!];
