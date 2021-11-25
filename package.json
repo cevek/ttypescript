@@ -1,6 +1,6 @@
 {
   "name": "ttypescript-build",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
   "private": true,
   "scripts": {
@@ -21,22 +21,19 @@
   "homepage": "https://github.com/cevek/ttypescript/#readme",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^23.3.11",
-    "@types/node": "^10.12.18",
-    "@types/resolve": "0.0.8",
-    "graphql": "^14.0.2",
-    "graphql-tag": "^2.10.0",
-    "jest": "^23.6.0",
-    "lerna": "^3.8.1",
-    "ts-jest": "^23.10.5",
-    "ts-nameof": "^2.0.0",
-    "ts-node": "^8.0.2",
-    "ts-transform-css-modules": "^0.3.3",
-    "ts-transform-graphql-tag": "^0.2.1",
-    "ts-transform-img": "^0.3.2",
-    "ts-transform-react-intl": "^0.4.0",
-    "ts-transformer-enumerate": "^0.3.1",
-    "ts-transformer-keys": "^0.3.4",
-    "typescript": "^3.2.2"
+    "@types/jest": ">=23.3.11",
+    "@types/node": ">=10.12.18",
+    "@types/resolve": ">=0.0.8",
+    "jest": ">=23.6.0",
+    "lerna": ">=3.8.1",
+    "ts-jest": ">=23.10.5",
+    "ts-nameof": ">=2.0.0",
+    "ts-node": ">=8.0.2",
+    "ts-transform-css-modules": ">=0.3.3",
+    "ts-transform-img": ">=0.3.2",
+    "ts-transform-react-intl": ">=0.4.0",
+    "ts-transformer-enumerate": ">=0.3.1",
+    "ts-transformer-keys": ">=0.3.4",
+    "typescript": ">=3.2.2"
   }
 }

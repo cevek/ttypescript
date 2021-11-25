@@ -85,7 +85,7 @@ console.log(abc.toString());
                 plugins: [
                     { transform: 'ts-transformer-keys/transformer' },
                     { transform: 'ts-transformer-enumerate/transformer' },
-                    { transform: 'ts-transform-graphql-tag/dist/transformer' },
+                    // { transform: 'ts-transform-graphql-tag/dist/transformer' },
                     { transform: 'ts-transform-img/dist/transform', type: 'config' },
                     { transform: 'ts-transform-css-modules/dist/transform', type: 'config' },
                     { transform: 'ts-transform-react-intl/dist/transform', type: 'config', import: "transform" },
