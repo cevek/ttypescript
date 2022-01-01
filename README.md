@@ -316,6 +316,8 @@ Examples of transformers:
 
 [`{ "transform": "ts-transformer-properties-rename", "entrySourceFiles": ["./src/index.ts"] }`](https://github.com/timocov/ts-transformer-properties-rename)
 
+[`{ "transform": "tsc-progress", "name": "TSC", "color": "green" }`](https://github.com/JiangWeixian/tsc-progress)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
