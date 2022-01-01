@@ -274,23 +274,23 @@ Examples of transformers:
 
 [`{ "transform": "ts-transform-auto-require" }`](https://github.com/slune-org/ts-transform-auto-require) 
 
-[`{ "transform": "ts-transform-css-modules/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-css-modules) 
+[`{ "transform": "ts-transform-css-modules/dist/transform", type: "config" }`](https://github.com/longlho/ts-transform-css-modules) 
 
-[`{ "transform": "ts-transform-graphql-tag/dist/transformer"}`](https://github.com/firede/ts-transform-graphql-tag) 
+[`{ "transform": "ts-transform-graphql-tag/dist/transformer" }`](https://github.com/firede/ts-transform-graphql-tag) 
 
-[`{ "transform": "ts-transform-img/dist/transform", type: "config"}`](https://github.com/longlho/ts-transform-img) 
+[`{ "transform": "ts-transform-img/dist/transform", type: "config" }`](https://github.com/longlho/ts-transform-img) 
 
-[`{ "transform": "ts-transform-react-intl/dist/transform", import: "transform", type: "config"}`](https://github.com/longlho/ts-transform-react-intl) 
+[`{ "transform": "ts-transform-react-intl/dist/transform", import: "transform", type: "config" }`](https://github.com/longlho/ts-transform-react-intl) 
 
-[`{ "transform": "ts-transformer-enumerate/transformer"}`](https://github.com/kimamula/ts-transformer-enumerate)
+[`{ "transform": "ts-transformer-enumerate/transformer" }`](https://github.com/kimamula/ts-transformer-enumerate)
 
-[`{ "transform": "ts-transformer-keys/transformer"}`](https://github.com/kimamula/ts-transformer-keys) 
+[`{ "transform": "ts-transformer-keys/transformer" }`](https://github.com/kimamula/ts-transformer-keys) 
 
 [`{ "transform": "ts-transformer-minify-privates" }`](https://github.com/timocov/ts-transformer-minify-privates) 
 
-[`{ "transform": "typescript-is/lib/transform-inline/transformer"}`](https://github.com/woutervh-/typescript-is) 
+[`{ "transform": "typescript-is/lib/transform-inline/transformer" }`](https://github.com/woutervh-/typescript-is) 
 
-[`{ "transform": "typescript-plugin-styled-components", type: "config"}`](https://github.com/Igorbek/typescript-plugin-styled-components#ttypescript-compiler)
+[`{ "transform": "typescript-plugin-styled-components", type: "config" }`](https://github.com/Igorbek/typescript-plugin-styled-components#ttypescript-compiler)
 
 [`{ "transform": "typescript-transform-jsx" }`](https://github.com/LeDDGroup/typescript-transform-jsx) 
 
@@ -306,7 +306,7 @@ Examples of transformers:
 
 [`{ "transform": "typescript-transform-react-jsx-source" }`](https://github.com/alexgorbatchev/typescript-transform-react-jsx-source)
 
-[`"transform": "ts-transformer-remove-named-export"}`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
+[`{ "transform": "ts-transformer-remove-named-export" }`](https://github.com/dominguezcelada/ts-transformer-remove-named-export)
 
 [`{ "transform": "ts-transformer-export-default-name" }`](https://github.com/jirutka/ts-transformer-export-default-name)
 
