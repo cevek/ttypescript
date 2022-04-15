@@ -19,7 +19,7 @@ import * as tsServer from 'ttypescript/lib/tsserver'
 import * as watchGuard from 'ttypescript/lib/watchGuard'
 ```
 --->
-Instead of tsc and tsserver, use ttsc and ttsserver wrappers. This wrappers try to use locally installed typescript first.
+Instead of tsc and tsserver, use ttsc and ttsserver wrappers. These wrappers try to use the locally installed typescript first.
 
 No version lock-ins - typescript used as peer dependency.
 
