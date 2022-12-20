@@ -318,6 +318,8 @@ Examples of transformers:
 
 [`{ "transform": "tsc-progress", "name": "TSC", "color": "green" }`](https://github.com/JiangWeixian/tsc-progress)
 
+[`{ "transform": "typia/lib/transform" }`](https://github.com/samchon/typia)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
