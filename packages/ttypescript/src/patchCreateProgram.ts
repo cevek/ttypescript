@@ -30,17 +30,17 @@ export function addDiagnosticFactory(program: ts.Program) {
 }
 
 export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, projectDir = process.cwd()) {
-    const originCreateProgram = tsm.createProgram as any;
-
-    function createProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
-    function createProgram(
+    const originCreateProgram = tsm.createProgram;
+    const {createProgram : _, ...rest} = tsm;
+    function hackCreateProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
+    function hackCreateProgram(
         rootNames: ReadonlyArray<string>,
         options: ts.CompilerOptions,
         host?: ts.CompilerHost,
         oldProgram?: ts.Program,
         configFileParsingDiagnostics?: ReadonlyArray<ts.Diagnostic>
     ): ts.Program;
-    function createProgram(
+    function hackCreateProgram(
         rootNamesOrOptions: ReadonlyArray<string> | ts.CreateProgramOptions,
         options?: ts.CompilerOptions,
         host?: ts.CompilerHost,
@@ -108,8 +108,8 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
         };
         return program;
     }
-    tsm.createProgram = createProgram;
-    return tsm;
+    (rest as typeof ts).createProgram = hackCreateProgram;
+    return rest as typeof ts;
 }
 
 function getConfig(

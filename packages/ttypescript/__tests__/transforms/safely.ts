@@ -12,7 +12,7 @@ export default function myTransformerPlugin(program: ts.Program, opts?: MyPlugin
                     if (ts.isCallExpression(node) && node.expression.getText() === 'safely') {
                         const target = node.arguments[0]
                         if (ts.isPropertyAccessExpression(target)) {
-                            return ts.createBinary(
+                            return ts.factory.createBinaryExpression(
                                 target.expression,
                                 ts.SyntaxKind.AmpersandAmpersandToken,
                                 target

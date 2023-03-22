@@ -6,12 +6,12 @@ export default function(program: ts.Program) {
             if (
                 ts.isCallExpression(node) &&
                 ts.isIdentifier(node.expression) &&
-                node.expression.getText() === 'type' &&
+                node.expression.escapedText === 'type' &&
                 node.typeArguments &&
                 node.typeArguments[0]
             ) {
                 const type = checker.getTypeFromTypeNode(node.typeArguments[0]);
-                return ts.createLiteral(checker.typeToString(type));
+                return ts.factory.createStringLiteral(checker.typeToString(type));
             }
             return ts.visitEachChild(node, visitor, ctx);
         }
