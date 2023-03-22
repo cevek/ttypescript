@@ -14,7 +14,8 @@ export function loadTypeScript(
     const libFilename = resolveSync('typescript/lib/' + filename, { basedir: folder });
 
     if (!require.cache[libFilename]) {
-        require.cache[libFilename] = TSModuleFactory(libFilename);
+        const temp =  TSModuleFactory(libFilename);
+        require.cache = {...require.cache, [libFilename]: temp};
     }
 
     const ts = TSModuleFactory(libFilename).exports;
@@ -23,7 +24,13 @@ export function loadTypeScript(
         throw new Error('ttypescript supports typescript from 2.7 version');
     }
 
-    return patchCreateProgram(ts, forceConfigLoad);
+    const result = patchCreateProgram(ts, forceConfigLoad);
+
+    if(+major >= 5 && (result as any).args){
+        (result as any).args.this = (result as any).args.exports;
+    }
+    
+    return result;
 }
 
 type TypeScriptFactory = (exports: ts, require: NodeRequire, module: Module, filename: string, dirname: string) => void;
