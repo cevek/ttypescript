@@ -33,7 +33,7 @@ jobs:
       - run: npm run build
       - run: npm run test
 
-  TS4.9-CI:
+  TS4_9-CI:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
