@@ -10,7 +10,6 @@ jobs:
         with:
           node-version: 14.x
       - run: npm install
-      - run: npm run build
       - run: npm run test
   node16-CI:
     runs-on: ubuntu-latest
@@ -20,7 +19,6 @@ jobs:
         with:
           node-version: 16.x
       - run: npm install
-      - run: npm run build
       - run: npm run test
   node18-CI:
     runs-on: ubuntu-latest
@@ -30,7 +28,6 @@ jobs:
         with:
           node-version: 18.x
       - run: npm install
-      - run: npm run build
       - run: npm run test
 
   TS4_9-CI:
@@ -42,7 +39,7 @@ jobs:
           node-version: 16.x
       - run: npm install
       - run: npm install typescript@4.9
-      - run: npm run build
+      - run: cd packages/ttypescript && npm i typescript@4.9 && cd ../../
       - run: npm run test
   TS5-CI:
     runs-on: ubuntu-latest
@@ -52,5 +49,4 @@ jobs:
         with:
           node-version: 16.x
       - run: npm install
-      - run: npm run build
       - run: npm run test
