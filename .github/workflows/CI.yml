@@ -40,8 +40,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16.x
-      - run: npm install typescript@4.9
       - run: npm install
+      - run: npm install typescript@4.9
       - run: npm run build
       - run: npm run test
   TS5-CI:
