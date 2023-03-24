@@ -2,33 +2,33 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  TS4_9-CI:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 14.x, 16.x, 18.x ]
+    TS4_9-CI:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [16.x, 18.x]
 
-    steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: npm install typescript@4.9
-      - run: cd packages/ttypescript && npm i typescript@4.9 && cd ../../
-      - run: npm run test
-  TS5-CI:
-    runs-on: ubuntu-latest    
-    strategy:
-      matrix:
-        node-version: [ 14.x, 16.x, 18.x ]
+        steps:
+            - uses: actions/checkout@v1
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm install typescript@4.9
+            - run: cd packages/ttypescript && npm i typescript@4.9 && cd ../../
+            - run: npm run test
+    TS5-CI:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [16.x, 18.x]
 
-    steps:
-      - uses: actions/checkout@v1      
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: npm run test
+        steps:
+            - uses: actions/checkout@v1
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm run test
