@@ -14,8 +14,8 @@ export function loadTypeScript(
     const libFilename = resolveSync('typescript/lib/' + filename, { basedir: folder });
 
     if (!require.cache[libFilename]) {
-        const temp =  TSModuleFactory(libFilename);
-        require.cache = {...require.cache, [libFilename]: temp};
+        const temp = TSModuleFactory(libFilename);
+        require.cache = { ...require.cache, [libFilename]: temp };
     }
 
     const ts = TSModuleFactory(libFilename).exports;
@@ -26,10 +26,10 @@ export function loadTypeScript(
 
     const result = patchCreateProgram(ts, forceConfigLoad);
 
-    if(+major >= 5 && (result as any).args){
+    if (+major >= 5 && (result as any).args) {
         (result as any).args.this = (result as any).args.exports;
     }
-    
+
     return result;
 }
 

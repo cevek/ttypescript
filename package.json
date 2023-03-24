@@ -1,39 +1,41 @@
 {
-  "name": "ttypescript-build",
-  "version": "1.4.1",
-  "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
-  "private": true,
-  "scripts": {
-    "clean": "rm -rf packages/*/dist packages/*/lib",
-    "clean.all": "lerna clean --yes && rm -rf package-lock.json packages/*/package-lock.json node_modules packages/*/lib packages/*/dist",
-    "debug": "node --inspect-brk ./node_modules/jest/bin/jest --runInBand --no-cache --no-watchman",
-    "postinstall": "lerna bootstrap --hoist",
-    "build": "lerna exec --scope=ttypescript -- tsc",
-    "test": "npm run build && jest",
-    "test.watch": "npm run build && jest --watch",
-    "publish": "npm test && lerna publish --conventional-commits --yes"
-  },
-  "author": "cevek",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cevek/ttypescript.git"
-  },
-  "homepage": "https://github.com/cevek/ttypescript/#readme",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/jest": ">=23.3.11",
-    "@types/node": ">=10.12.18",
-    "@types/resolve": ">=0.0.8",
-    "jest": ">=23.6.0",
-    "lerna": ">=3.8.1",
-    "ts-jest": ">=23.10.5",
-    "ts-nameof": ">=2.0.0",
-    "ts-node": ">=8.0.2",
-    "ts-transform-css-modules": ">=0.3.3",
-    "ts-transform-img": ">=0.3.2",
-    "ts-transform-react-intl": ">=0.4.0",
-    "ts-transformer-enumerate": ">=0.3.1",
-    "ts-transformer-keys": ">=0.3.4",
-    "typescript": ">=3.2.2"
-  }
+    "name": "ttypescript-build",
+    "version": "1.4.1",
+    "description": "Over TypeScript tool to use custom transformers in the tsconfig.json",
+    "private": true,
+    "scripts": {
+        "clean": "rm -rf packages/*/dist packages/*/lib",
+        "clean.all": "lerna clean --yes && rm -rf package-lock.json packages/*/package-lock.json node_modules packages/*/lib packages/*/dist",
+        "debug": "node --inspect-brk ./node_modules/jest/bin/jest --runInBand --no-cache --no-watchman",
+        "postinstall": "lerna bootstrap --hoist",
+        "build": "lerna exec --scope=ttypescript -- tsc",
+        "test": "npm run build && jest",
+        "test.watch": "npm run build && jest --watch",
+        "publish": "npm test && lerna publish --conventional-commits --yes",
+        "prettier": "npx prettier --config .prettierrc.js --check .",
+        "prettier:fix": "npx prettier --config .prettierrc.js --write ."
+    },
+    "author": "cevek",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cevek/ttypescript.git"
+    },
+    "homepage": "https://github.com/cevek/ttypescript/#readme",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/jest": ">=23.3.11",
+        "@types/node": ">=10.12.18",
+        "@types/resolve": ">=0.0.8",
+        "jest": ">=23.6.0",
+        "lerna": ">=3.8.1",
+        "ts-jest": ">=23.10.5",
+        "ts-nameof": ">=2.0.0",
+        "ts-node": ">=8.0.2",
+        "ts-transform-css-modules": ">=0.3.3",
+        "ts-transform-img": ">=0.3.2",
+        "ts-transform-react-intl": ">=0.4.0",
+        "ts-transformer-enumerate": ">=0.3.1",
+        "ts-transformer-keys": ">=0.3.4",
+        "typescript": ">=3.2.2"
+    }
 }

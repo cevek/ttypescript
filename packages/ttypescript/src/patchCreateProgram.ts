@@ -31,7 +31,7 @@ export function addDiagnosticFactory(program: ts.Program) {
 
 export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, projectDir = process.cwd()) {
     const originCreateProgram = tsm.createProgram;
-    const {createProgram : _, ...rest1} = tsm;
+    const { createProgram: _, ...rest1 } = tsm;
     function hackCreateProgram(createProgramOptions: ts.CreateProgramOptions): ts.Program;
     function hackCreateProgram(
         rootNames: ReadonlyArray<string>,
@@ -109,7 +109,7 @@ export function patchCreateProgram(tsm: typeof ts, forceReadConfig = false, proj
         return program;
     }
     (rest1 as typeof ts).createProgram = hackCreateProgram;
-    
+
     return injectionShadowedValues(rest1) as typeof ts;
 }
 
@@ -159,42 +159,43 @@ function preparePluginsFromCompilerOptions(plugins: any): PluginConfig[] {
     return plugins;
 }
 
-function injectionShadowedValues(target : any){
+function injectionShadowedValues(target: any) {
     target.getDefaultCompilerOptions2 = function getDefaultCompilerOptions2() {
         return {
             target: 1 /* ES5 */,
-            jsx: 1 /* Preserve */
+            jsx: 1 /* Preserve */,
         };
     };
-    function fail(message:string, stackCrawlMark : any) {
+    function fail(message: string, stackCrawlMark: any) {
         debugger;
-        const e = new Error(message ? `Debug Failure. ${message}` : "Debug Failure.");
+        const e = new Error(message ? `Debug Failure. ${message}` : 'Debug Failure.');
         if (Error.captureStackTrace) {
-          Error.captureStackTrace(e, stackCrawlMark || fail);
+            Error.captureStackTrace(e, stackCrawlMark || fail);
         }
         throw e;
-      }
+    }
 
-    function assertEqual(a : any, b : any, msg : string, msg2 : string, stackCrawlMark : any) {
+    function assertEqual(a: any, b: any, msg: string, msg2: string, stackCrawlMark: any) {
         if (a !== b) {
-            const message = msg ? msg2 ? `${msg} ${msg2}` : msg : "";
+            const message = msg ? (msg2 ? `${msg} ${msg2}` : msg) : '';
             fail(`Expected ${a} === ${b}. ${message}`, stackCrawlMark || assertEqual);
         }
-    };
+    }
     target.assertEqual = assertEqual;
-    function fileExtensionIs(path : string, extension : string){
-        return path.length > extension.length && path.endsWith(extension)
+    function fileExtensionIs(path: string, extension: string) {
+        return path.length > extension.length && path.endsWith(extension);
     }
     try {
-        let originTranspileModule = (target.transpileModule as any).toString()
-            .replace(/(?<!function)\s([a-z][A-Za-z0-9]+)\(/g, " target.$1(")
-            .replace("hasProperty", "target.hasProperty")
-            .replace(/Debug\./g, "target.")
-            .replace("transpileOptionValueCompilerOptions", "target.transpileOptionValueCompilerOptions");
-        const {transpileModule : __, ..._target} = target;
-        (_target as typeof ts).transpileModule = eval("(" + originTranspileModule + ")");
+        let originTranspileModule = (target.transpileModule as any)
+            .toString()
+            .replace(/(?<!function)\s([a-z][A-Za-z0-9]+)\(/g, ' target.$1(')
+            .replace('hasProperty', 'target.hasProperty')
+            .replace(/Debug\./g, 'target.')
+            .replace('transpileOptionValueCompilerOptions', 'target.transpileOptionValueCompilerOptions');
+        const { transpileModule: __, ..._target } = target;
+        (_target as typeof ts).transpileModule = eval('(' + originTranspileModule + ')');
         return _target;
     } catch (e) {
         return target;
     }
- }
+}

@@ -6,21 +6,18 @@ import { runInThisContext } from 'vm';
 
 const ts = loadTypeScript('typescript', { folder: process.cwd(), forceConfigLoad: true });
 const tscFileName = resolve.sync('typescript/lib/tsc', { basedir: process.cwd() });
-const [major, minor]: [number, number] = 
-    ts.version.split(".").map(
-        (str: string) => Number(str)
-    ) as [number, number];
+const [major, minor]: [number, number] = ts.version.split('.').map((str: string) => Number(str)) as [number, number];
 
 let commandLineTsCode = fs
     .readFileSync(tscFileName, 'utf8')
     .replace(
         major >= 4 && minor >= 9
             ? /^[\s\S]+(\(function \(ts\) {\s+var StatisticType;[\s\S]+)$/
-            : /^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/, 
+            : /^[\s\S]+(\(function \(ts\) \{\s+function countLines[\s\S]+)$/,
         '$1'
     );
-if(major >= 5){
-    commandLineTsCode = commandLineTsCode.replace(/\= createProgram\(/g, "= ts.createProgram(");
+if (major >= 5) {
+    commandLineTsCode = commandLineTsCode.replace(/\= createProgram\(/g, '= ts.createProgram(');
 }
 const globalCode = (fs.readFileSync(tscFileName, 'utf8').match(/^([\s\S]*?)var ts;/) || ['', ''])[1];
 runInThisContext(
