@@ -2,41 +2,14 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  node14-CI:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
-      - run: npm install
-      - run: npm run test
-  node16-CI:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - run: npm install
-      - run: npm run test
-  node18-CI:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 18.x
-      - run: npm install
-      - run: npm run test
-
   TS4_9-CI:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm install typescript@4.9
       - run: cd packages/ttypescript && npm i typescript@4.9 && cd ../../
@@ -44,9 +17,10 @@ jobs:
   TS5-CI:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v1      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm run test
