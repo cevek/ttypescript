@@ -4,6 +4,10 @@ on: [push, pull_request]
 jobs:
   TS4_9-CI:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 12.x, 14.x, 16.x ]
+
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -15,7 +19,11 @@ jobs:
       - run: cd packages/ttypescript && npm i typescript@4.9 && cd ../../
       - run: npm run test
   TS5-CI:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    strategy:
+      matrix:
+        node-version: [ 12.x, 14.x, 16.x ]
+
     steps:
       - uses: actions/checkout@v1      
       - name: Use Node.js ${{ matrix.node-version }}
