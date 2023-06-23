@@ -1,3 +1,10 @@
+# Deprecation Notice
+
+> **`ttypescript` is deprecated**. It currently works with TS below 5.0, but it will not be updated.
+ 
+For TypeScript 5+, please use [ts-patch](https://github.com/nonara/ts-patch).
+
+---
 
 [![npm version](https://badge.fury.io/js/ttypescript.svg)](https://badge.fury.io/js/ttypescript) [![Build Status](https://travis-ci.org/cevek/ttypescript.svg?branch=master)](https://travis-ci.org/cevek/ttypescript)
 
