@@ -70,7 +70,7 @@ export interface PluginConfig {
     /**
      * Plugin entry point format type, default is program
      */
-    type?: 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
+    type?: 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions' | 'middleware';
 
     /**
      * Should transformer applied after all ones
@@ -158,6 +158,49 @@ Plugin config entry: `{ "transform": "transformer-module", type: "compilerOption
             { "transform": "transformer-module", "after": true },
             { "transform": "transformer-module", "afterDeclarations": true },
             { "transform": "transformer-module", "type": "ls" }
+        ]
+    },
+}
+```
+#### middleware
+This type is special — it allows to intercept the build process before it starts, by hooking into `ts.createProgram`, in style similar to Express middlewares.
+
+This mechanism allows to implement virtual modules, virtual file system, custom loaders etc.
+
+Example middleware:
+
+```ts
+import * as ts from 'typescript';
+
+export default function(config: { foo: string, bar?: string }): ts.Middleware {
+    return {
+        createProgram(opts, next) {
+            // somehow change options - for example, intercept methods of CompilerHost
+            opts.host = opts.host ? opts.host : ts.createCompilerHost(opts.options);
+
+            // pass control either to real ts.createProgram, or to the earlier middleware
+            const program = next(opts);
+
+            // it's possible to call `next` multiple times, or not call it at all
+
+            // when `next()` is called without arguments, it will use the same `opts` object as current middleware
+
+            // do something with built program
+            console.log(program.getTypeCount());
+
+            return program;
+        }
+    }
+}
+```
+
+Example configuration:
+
+```json
+{
+    "compilerOptions": {
+        "plugins": [
+            { "transform": "some-middleware-module", "foo": "this is config property", "bar": "this is too" }
         ]
     },
 }

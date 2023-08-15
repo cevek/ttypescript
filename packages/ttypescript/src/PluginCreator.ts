@@ -21,7 +21,7 @@ export interface PluginConfig {
     /**
      * Plugin entry point format type, default is program
      */
-    type?: 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions';
+    type?: 'ls' | 'program' | 'config' | 'checker' | 'raw' | 'compilerOptions' | 'middleware';
 
     /**
      * Should transformer applied after all ones
@@ -34,7 +34,24 @@ export interface PluginConfig {
     afterDeclarations?: boolean;
 }
 
-export interface TransformerBasePlugin {
+export type CreateProgramMiddlewareNext = (createProgramOptions?: ts.CreateProgramOptions) => ts.Program;
+export type CreateProgramMiddlewareHead = (createProgramOptions: ts.CreateProgramOptions) => ts.Program;
+export type CreateProgramMiddleware = (createProgramOptions: ts.CreateProgramOptions, next: CreateProgramMiddlewareNext) => ts.Program;
+
+declare module 'typescript' {
+    export interface Middleware {
+        createProgram?: CreateProgramMiddleware;
+    }
+    export interface MiddlewareHead {
+        createProgram: CreateProgramMiddlewareHead;
+    }
+}
+
+export type OriginEntries = {
+    createProgram: typeof ts.createProgram;
+}
+
+export interface TransformerBasePlugin extends ts.Middleware {
     before?: ts.TransformerFactory<ts.SourceFile>;
     after?: ts.TransformerFactory<ts.SourceFile>;
     afterDeclarations?: ts.TransformerFactory<ts.SourceFile | ts.Bundle>;
@@ -57,13 +74,18 @@ export type RawPattern = (
     program: ts.Program,
     config: {}
 ) => ts.Transformer<ts.SourceFile>;
+export type MiddlewarePattern = (
+    config: {},
+    typescript: typeof ts
+) => ts.Middleware;
 export type PluginFactory =
     | LSPattern
     | ProgramPattern
     | ConfigPattern
     | CompilerOptionsPattern
     | TypeCheckerPattern
-    | RawPattern;
+    | RawPattern
+    | MiddlewarePattern;
 
 function createTransformerFromPattern({
     typescript,
@@ -75,7 +97,7 @@ function createTransformerFromPattern({
     typescript: typeof ts;
     factory: PluginFactory;
     config: PluginConfig;
-    program: ts.Program;
+    program?: ts.Program;
     ls?: ts.LanguageService;
 }): TransformerBasePlugin {
     const { transform, after, afterDeclarations, name, type, ...cleanConfig } = config;
@@ -87,23 +109,31 @@ function createTransformerFromPattern({
             ret = (factory as LSPattern)(ls, cleanConfig);
             break;
         case 'config':
+            if (!program) throw new Error(`Plugin ${transform} needs a Program`);
             ret = (factory as ConfigPattern)(cleanConfig);
             break;
         case 'compilerOptions':
+            if (!program) throw new Error(`Plugin ${transform} needs a Program`);
             ret = (factory as CompilerOptionsPattern)(program.getCompilerOptions(), cleanConfig);
             break;
         case 'checker':
+            if (!program) throw new Error(`Plugin ${transform} needs a Program`);
             ret = (factory as TypeCheckerPattern)(program.getTypeChecker(), cleanConfig);
             break;
         case undefined:
         case 'program':
+            if (!program) throw new Error(`Plugin ${transform} needs a Program`);
             ret = (factory as ProgramPattern)(program, cleanConfig, {
                 ts: typescript,
                 addDiagnostic: addDiagnosticFactory(program),
             });
             break;
         case 'raw':
+            if (!program) throw new Error(`Plugin ${transform} needs a Program`);
             ret = (ctx: ts.TransformationContext) => (factory as RawPattern)(ctx, program, cleanConfig);
+            break;
+        case 'middleware':
+            ret = (factory as MiddlewarePattern)(cleanConfig, typescript);
             break;
         default:
             return never(config.type);
@@ -174,9 +204,9 @@ export class PluginCreator {
             program = params.program;
         }
         for (const config of this.configs) {
-            if (!config.transform) {
-                continue;
-            }
+            if (config.type === 'middleware') continue;
+            if (!config.transform) continue;
+
             const factory = this.resolveFactory(config.transform, config.import);
             // if recursion
             if (factory === undefined) continue;
@@ -193,6 +223,51 @@ export class PluginCreator {
         // if we're given some custom transformers, they must be chained at the end
         if (customTransformers) {
             this.mergeTransformers(chain, customTransformers);
+        }
+
+        return chain;
+    }
+
+    private composeMiddlewareTransformers(inner: TransformerBasePlugin, outer: TransformerBasePlugin) {
+        inner.createProgram = this.composeMiddlewares(inner.createProgram, outer.createProgram);
+    }
+
+    private composeMiddlewares<F extends Function>(inner?: F, outer?: F): F {
+        if (!inner) {
+            throw new Error('inner middleware must exist');
+        }
+
+        if (!outer) {
+            return inner;
+        }
+
+        return (<A extends readonly any[]>(...args: A) => {
+            return outer(...args, (...newArgs: A) => {
+                newArgs = newArgs.length === 0 ? args : newArgs;
+
+                return inner(...newArgs)
+            });
+        }) as unknown as F;
+    }
+
+    createMiddlewares(originEntries: OriginEntries): ts.MiddlewareHead {
+        const chain: ts.MiddlewareHead = {
+            createProgram: (opts) => originEntries.createProgram(opts)
+        }
+
+        for (const config of this.configs) {
+            if (config.type !== 'middleware') continue;
+            if (!config.transform) continue;
+
+            const factory = this.resolveFactory(config.transform, config.import);
+            // if recursion
+            if (factory === undefined) continue;
+            const transformer = createTransformerFromPattern({
+                typescript: this.typescript,
+                factory,
+                config
+            });
+            this.composeMiddlewareTransformers(chain, transformer);
         }
 
         return chain;
