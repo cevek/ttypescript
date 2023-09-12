@@ -325,6 +325,8 @@ Examples of transformers:
 
 [`{ "transform": "tsc-progress", "name": "TSC", "color": "green" }`](https://github.com/JiangWeixian/tsc-progress)
 
+[`{ "transform": "ts-transformer-optimize-const-enum" }`](https://github.com/Fonger/ts-transformer-optimize-const-enum)
+
 [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
 
 - [Tutorial how to write a typescript transformer](https://dev.doctorevidence.com/how-to-write-a-typescript-transform-plugin-fc5308fdd943)
